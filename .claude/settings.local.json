@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(du -sh /c/Users/cuong/.claude/*)",
+      "Bash(claude mcp:*)",
+      "Bash(npx create-next-app@14 . --typescript --tailwind --eslint --app --no-src-dir --import-alias \"@/*\" --yes)",
+      "Bash(npx create-next-app@14 . --typescript --tailwind --eslint --app --no-src-dir --import-alias \"@/*\" --yes --name lite-lms)",
+      "Bash(npx create-next-app@14 lite-lms-temp --typescript --tailwind --eslint --app --no-src-dir --import-alias \"@/*\" --yes)",
+      "Bash(cp -r \"C:/Users/cuong/Jaxtina Coding/lite-lms-temp/.\" \"C:/Users/cuong/Jaxtina Coding/Lite LMS/\")",
+      "Bash(rm -rf \"C:/Users/cuong/Jaxtina Coding/lite-lms-temp\")",
+      "Bash(npm install:*)",
+      "Bash(npx shadcn@latest init --defaults --yes)"
+    ]
+  }
+}
