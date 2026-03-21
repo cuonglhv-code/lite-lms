@@ -11,13 +11,13 @@ TRUNCATE resources, attendance, assessments, homework, enrolments, students, cla
 -- password: 'password123' → bcrypt hash placeholder
 -- ============================================================
 INSERT INTO users (id, name, email, password_hash, role) VALUES
-  ('00000000-0000-0000-0000-000000000001', 'Academic Manager',  'manager@jaxtina.com',   '$2b$10$EixZaYVK1fsbw1ZfbX3OXePaWxn96p36WQoeG6Lruj3vjPGga31lW', 'manager'),
-  ('00000000-0000-0000-0000-000000000002', 'Linh Nguyen',       'linh@jaxtina.com',      '$2b$10$EixZaYVK1fsbw1ZfbX3OXePaWxn96p36WQoeG6Lruj3vjPGga31lW', 'manager'),
-  ('00000000-0000-0000-0000-000000000003', 'Sarah Mitchell',    'sarah@jaxtina.com',     '$2b$10$EixZaYVK1fsbw1ZfbX3OXePaWxn96p36WQoeG6Lruj3vjPGga31lW', 'teacher'),
-  ('00000000-0000-0000-0000-000000000004', 'James Tran',        'james@jaxtina.com',     '$2b$10$EixZaYVK1fsbw1ZfbX3OXePaWxn96p36WQoeG6Lruj3vjPGga31lW', 'teacher'),
-  ('00000000-0000-0000-0000-000000000005', 'Anna Pham',         'anna@jaxtina.com',      '$2b$10$EixZaYVK1fsbw1ZfbX3OXePaWxn96p36WQoeG6Lruj3vjPGga31lW', 'teacher'),
-  ('00000000-0000-0000-0000-000000000006', 'David Le',          'david@jaxtina.com',     '$2b$10$EixZaYVK1fsbw1ZfbX3OXePaWxn96p36WQoeG6Lruj3vjPGga31lW', 'teacher'),
-  ('00000000-0000-0000-0000-000000000007', 'Emily Hoang',       'emily@jaxtina.com',     '$2b$10$EixZaYVK1fsbw1ZfbX3OXePaWxn96p36WQoeG6Lruj3vjPGga31lW', 'teacher');
+  ('00000000-0000-0000-0000-000000000001', 'Academic Manager',  'manager@jaxtina.com',   '$2b$10$zWeFrs30XwPabiyfwp8yD.sc67KIOTwfIN2kmYpFeiLC9pu7rWg1C', 'manager'),
+  ('00000000-0000-0000-0000-000000000002', 'Linh Nguyen',       'linh@jaxtina.com',      '$2b$10$zWeFrs30XwPabiyfwp8yD.sc67KIOTwfIN2kmYpFeiLC9pu7rWg1C', 'manager'),
+  ('00000000-0000-0000-0000-000000000003', 'Sarah Mitchell',    'sarah@jaxtina.com',     '$2b$10$zWeFrs30XwPabiyfwp8yD.sc67KIOTwfIN2kmYpFeiLC9pu7rWg1C', 'teacher'),
+  ('00000000-0000-0000-0000-000000000004', 'James Tran',        'james@jaxtina.com',     '$2b$10$zWeFrs30XwPabiyfwp8yD.sc67KIOTwfIN2kmYpFeiLC9pu7rWg1C', 'teacher'),
+  ('00000000-0000-0000-0000-000000000005', 'Anna Pham',         'anna@jaxtina.com',      '$2b$10$zWeFrs30XwPabiyfwp8yD.sc67KIOTwfIN2kmYpFeiLC9pu7rWg1C', 'teacher'),
+  ('00000000-0000-0000-0000-000000000006', 'David Le',          'david@jaxtina.com',     '$2b$10$zWeFrs30XwPabiyfwp8yD.sc67KIOTwfIN2kmYpFeiLC9pu7rWg1C', 'teacher'),
+  ('00000000-0000-0000-0000-000000000007', 'Emily Hoang',       'emily@jaxtina.com',     '$2b$10$zWeFrs30XwPabiyfwp8yD.sc67KIOTwfIN2kmYpFeiLC9pu7rWg1C', 'teacher');
 
 -- ============================================================
 -- COURSES (6 IELTS courses)

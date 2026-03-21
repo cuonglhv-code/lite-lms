@@ -21,7 +21,6 @@ export default function TeacherDashboard() {
   useEffect(() => {
     fetch('/api/classes').then(r => r.json()).then((cls: Class[]) => {
       setClasses(cls)
-      if (cls.length > 0) setClassId(cls[0].id)
     })
   }, [])
 
@@ -54,11 +53,15 @@ export default function TeacherDashboard() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-xl font-semibold">My Dashboard</h1>
+      <div className="flex flex-wrap items-center gap-4">
+        <h1 className="text-xl font-semibold mr-auto">My Dashboard</h1>
         <div className="flex gap-2">
           <Select value={classId} onValueChange={v => setClassId(v ?? '')}>
-            <SelectTrigger className="w-48 text-sm"><SelectValue placeholder="Select class" /></SelectTrigger>
+            <SelectTrigger className="w-48 text-sm">
+              <span className="truncate">
+                {classId ? (classes.find(c => c.id === classId)?.class_name ?? 'Select class') : 'Select class'}
+              </span>
+            </SelectTrigger>
             <SelectContent>
               {classes.map(c => <SelectItem key={c.id} value={c.id}>{c.class_name}</SelectItem>)}
             </SelectContent>

@@ -66,13 +66,13 @@ export default function ClassDetailPage({ params }: { params: { classId: string 
         <p className="text-sm text-gray-500">{cls.schedule} · {cls.status} · Teacher: {cls.teacher_name}</p>
       </div>
 
-      <Tabs defaultValue="overview">
-        <TabsList>
-          <TabsTrigger value="overview">Overview</TabsTrigger>
-          <TabsTrigger value="homework">Homework</TabsTrigger>
-          <TabsTrigger value="assessments">Assessments</TabsTrigger>
-          <TabsTrigger value="attendance">Attendance</TabsTrigger>
-          <TabsTrigger value="resources">Resources</TabsTrigger>
+      <Tabs defaultValue="overview" className="w-full">
+        <TabsList className="flex w-full">
+          <TabsTrigger value="overview" className="flex-1">Overview</TabsTrigger>
+          <TabsTrigger value="homework" className="flex-1">Homework</TabsTrigger>
+          <TabsTrigger value="assessments" className="flex-1">Assessments</TabsTrigger>
+          <TabsTrigger value="attendance" className="flex-1">Attendance</TabsTrigger>
+          <TabsTrigger value="resources" className="flex-1">Resources</TabsTrigger>
         </TabsList>
 
         {/* ── Overview ── */}

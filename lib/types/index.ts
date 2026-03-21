@@ -2,7 +2,7 @@
 // Jaxtina Lite LMS – TypeScript Types
 // ============================================================
 
-export type UserRole = 'teacher' | 'manager'
+export type UserRole = 'teacher' | 'manager' | 'student'
 
 export interface User {
   id: string
@@ -185,4 +185,67 @@ export interface StudentStats {
 export interface TeacherDashboardData {
   classStats: ClassStats
   studentStats?: StudentStats
+}
+
+// ── Student interface types ───────────────────────────────────
+
+export type SubmissionStatus = 'not_submitted' | 'submitted' | 'returned'
+
+export interface Assignment {
+  id: string
+  class_id: string
+  title: string
+  description: string | null
+  due_at: string | null
+  max_points: number
+  created_at: string
+}
+
+export interface AssignmentAttachment {
+  id: string
+  assignment_id: string
+  filename: string
+  mime_type: string | null
+  blob_url: string
+  created_at: string
+}
+
+export interface Submission {
+  id: string
+  assignment_id: string
+  student_id: string
+  submitted_at: string | null
+  status: SubmissionStatus
+  grade: number | null
+  feedback_text: string | null
+  returned_at: string | null
+  created_at: string
+}
+
+export interface SubmissionFile {
+  id: string
+  submission_id: string
+  filename: string
+  mime_type: string | null
+  blob_url: string
+  uploaded_at: string
+}
+
+export interface ClassWithTeacher {
+  id: string
+  class_name: string
+  class_code: string
+  schedule: string | null
+  status: string
+  teacher_name: string
+  course_name: string
+}
+
+export interface AssignmentWithSubmission extends Assignment {
+  submission: Submission | null
+}
+
+export interface AssignmentWithDetails extends Assignment {
+  attachments: AssignmentAttachment[]
+  submission: (Submission & { files: SubmissionFile[] }) | null
 }

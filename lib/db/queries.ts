@@ -3,6 +3,8 @@ import type {
   User, Class, Student, Enrolment, Homework, Assessment, Attendance, Resource,
   ManagerDashboardData, TeacherDashboardData, ClassSummary, AtRiskStudent,
   StatusIndicator,
+  Assignment, AssignmentAttachment, Submission, SubmissionFile,
+  ClassWithTeacher, AssignmentWithSubmission,
 } from '@/lib/types'
 
 // ── Users ─────────────────────────────────────────────────────
@@ -227,6 +229,138 @@ export async function createResource(data: {
             ${data.resource_type ?? null}, ${data.uploaded_by})
     RETURNING *`
   return rows[0] as Resource
+}
+
+// ── Student interface queries ─────────────────────────────────
+
+export async function getStudentByUserId(userId: string): Promise<Student | null> {
+  const { rows } = await sql`SELECT * FROM students WHERE user_id = ${userId}`
+  return rows[0] as Student ?? null
+}
+
+export async function getEnrolledClassesForStudent(studentId: string): Promise<ClassWithTeacher[]> {
+  const { rows } = await sql`
+    SELECT c.id, c.class_name, c.class_code, c.schedule, c.status,
+           u.name AS teacher_name, co.name AS course_name
+    FROM enrolments e
+    JOIN classes c ON e.class_id = c.id
+    LEFT JOIN users u ON c.teacher_id = u.id
+    LEFT JOIN courses co ON c.course_id = co.id
+    WHERE e.student_id = ${studentId} AND e.status = 'Active'
+    ORDER BY c.class_name`
+  return rows as ClassWithTeacher[]
+}
+
+export async function getAssignmentsByClass(classId: string): Promise<Assignment[]> {
+  const { rows } = await sql`
+    SELECT * FROM assignments WHERE class_id = ${classId}
+    ORDER BY due_at ASC NULLS LAST, created_at DESC`
+  return rows as Assignment[]
+}
+
+export async function getAssignmentsWithSubmissions(
+  classId: string,
+  studentId: string,
+): Promise<AssignmentWithSubmission[]> {
+  const { rows } = await sql`
+    SELECT a.*,
+           s.id AS sub_id, s.submitted_at, s.status AS sub_status,
+           s.grade, s.feedback_text, s.returned_at
+    FROM assignments a
+    LEFT JOIN submissions s ON s.assignment_id = a.id AND s.student_id = ${studentId}
+    WHERE a.class_id = ${classId}
+    ORDER BY a.due_at ASC NULLS LAST, a.created_at DESC`
+
+  return rows.map(r => ({
+    id: r.id,
+    class_id: r.class_id,
+    title: r.title,
+    description: r.description,
+    due_at: r.due_at,
+    max_points: Number(r.max_points),
+    created_at: r.created_at,
+    submission: r.sub_id ? {
+      id: r.sub_id,
+      assignment_id: r.id,
+      student_id: studentId,
+      submitted_at: r.submitted_at,
+      status: r.sub_status,
+      grade: r.grade !== null ? Number(r.grade) : null,
+      feedback_text: r.feedback_text,
+      returned_at: r.returned_at,
+      created_at: r.created_at,
+    } : null,
+  })) as AssignmentWithSubmission[]
+}
+
+export async function getAssignmentById(id: string): Promise<Assignment | null> {
+  const { rows } = await sql`SELECT * FROM assignments WHERE id = ${id}`
+  return rows[0] as Assignment ?? null
+}
+
+export async function getAssignmentAttachments(assignmentId: string): Promise<AssignmentAttachment[]> {
+  const { rows } = await sql`
+    SELECT * FROM assignment_attachments WHERE assignment_id = ${assignmentId}
+    ORDER BY created_at ASC`
+  return rows as AssignmentAttachment[]
+}
+
+export async function getSubmission(
+  assignmentId: string,
+  studentId: string,
+): Promise<Submission | null> {
+  const { rows } = await sql`
+    SELECT * FROM submissions WHERE assignment_id = ${assignmentId} AND student_id = ${studentId}`
+  return rows[0] as Submission ?? null
+}
+
+export async function getSubmissionFiles(submissionId: string): Promise<SubmissionFile[]> {
+  const { rows } = await sql`
+    SELECT * FROM submission_files WHERE submission_id = ${submissionId}
+    ORDER BY uploaded_at ASC`
+  return rows as SubmissionFile[]
+}
+
+export async function upsertSubmission(
+  assignmentId: string,
+  studentId: string,
+): Promise<Submission> {
+  const { rows } = await sql`
+    INSERT INTO submissions (assignment_id, student_id, submitted_at, status)
+    VALUES (${assignmentId}, ${studentId}, NOW(), 'submitted')
+    ON CONFLICT (assignment_id, student_id)
+    DO UPDATE SET status = 'submitted', submitted_at = NOW()
+    RETURNING *`
+  return rows[0] as Submission
+}
+
+export async function createDraftSubmission(
+  assignmentId: string,
+  studentId: string,
+): Promise<Submission> {
+  const { rows } = await sql`
+    INSERT INTO submissions (assignment_id, student_id, status)
+    VALUES (${assignmentId}, ${studentId}, 'not_submitted')
+    ON CONFLICT (assignment_id, student_id) DO UPDATE SET status = submissions.status
+    RETURNING *`
+  return rows[0] as Submission
+}
+
+export async function createSubmissionFile(data: {
+  submission_id: string
+  filename: string
+  mime_type: string | null
+  blob_url: string
+}): Promise<SubmissionFile> {
+  const { rows } = await sql`
+    INSERT INTO submission_files (submission_id, filename, mime_type, blob_url)
+    VALUES (${data.submission_id}, ${data.filename}, ${data.mime_type}, ${data.blob_url})
+    RETURNING *`
+  return rows[0] as SubmissionFile
+}
+
+export async function deleteSubmissionFile(id: string, submissionId: string): Promise<void> {
+  await sql`DELETE FROM submission_files WHERE id = ${id} AND submission_id = ${submissionId}`
 }
 
 // ── Dashboard queries ─────────────────────────────────────────
