@@ -45,6 +45,7 @@ export default function ClassDetailPage({ params }: { params: { classId: string 
     setAssessments(asRes); setAttendance(attRes); setResources(resRes)
   }
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => { load() }, [classId])
 
   async function updateHwStatus(id: string, status: string) {

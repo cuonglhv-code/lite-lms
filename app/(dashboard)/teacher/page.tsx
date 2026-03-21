@@ -9,7 +9,7 @@ import LineChartWidget from '@/components/charts/LineChart'
 import type { Class, Student, TeacherDashboardData, Homework, Assessment } from '@/lib/types'
 
 export default function TeacherDashboard() {
-  const { data: session } = useSession()
+  useSession()
   const [classes,    setClasses]    = useState<Class[]>([])
   const [students,   setStudents]   = useState<Student[]>([])
   const [classId,    setClassId]    = useState('')
