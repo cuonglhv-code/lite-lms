@@ -6,7 +6,6 @@ import { CreditCard, Search, TrendingDown } from 'lucide-react'
 import {
   ADMIN_PAYMENTS,
   FINANCE_KPIS,
-  type AdminPayment,
   type PaymentStatus,
 } from '@/lib/admin-data'
 

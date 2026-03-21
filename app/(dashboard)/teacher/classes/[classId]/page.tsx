@@ -6,8 +6,8 @@ import { useParams } from 'next/navigation'
 import { cn } from '@/lib/utils'
 import { ClipboardCheck, BookMarked, BarChart2, Calendar, Users } from 'lucide-react'
 import {
-  TEACHER_CLASSES, TEACHER_STUDENTS, TEACHER_SESSIONS,
-  TEACHER_HW_TASKS, TEACHER_ASSESSMENTS, TEACHER_SUBMISSIONS,
+  TEACHER_SESSIONS,
+  TEACHER_HW_TASKS, TEACHER_ASSESSMENTS,
   getClassById, getClassStudents,
 } from '@/lib/teacher-data'
 

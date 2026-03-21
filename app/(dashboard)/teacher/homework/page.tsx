@@ -28,8 +28,6 @@ export default function HomeworkHubPage() {
   const [tab,         setTab]         = useState<TabKey>('active')
   const [search,      setSearch]      = useState('')
   const [showModal,   setShowModal]   = useState(false)
-  const [scores,      setScores]      = useState<Record<string, string>>({})
-  const [feedback,    setFeedback]    = useState<Record<string, string>>({})
 
   const activeTasks   = TEACHER_HW_TASKS.filter(t => t.status !== 'closed')
   const archivedTasks = TEACHER_HW_TASKS.filter(t => t.status === 'closed')

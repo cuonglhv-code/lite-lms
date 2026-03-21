@@ -68,8 +68,6 @@ export default function NotificationsPage() {
     return true
   })
 
-  const unread = visible.filter(n => !readSet.has(n.id))
-
   const criticalCount  = TEACHER_NOTIFICATIONS.filter(n => n.priority === 'critical' && !n.read && !dismissed.has(n.id)).length
   const highCount      = TEACHER_NOTIFICATIONS.filter(n => n.priority === 'high' && !n.read && !dismissed.has(n.id)).length
   const totalUnread    = TEACHER_NOTIFICATIONS.filter(n => !readSet.has(n.id) && !dismissed.has(n.id)).length

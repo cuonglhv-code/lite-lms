@@ -12,7 +12,7 @@ import Link from 'next/link'
 import { Download, ArrowLeft, Calendar, Award } from 'lucide-react'
 import YourWorkPanel from '@/components/student/YourWorkPanel'
 import FeedbackPanel from '@/components/student/FeedbackPanel'
-import type { Submission, SubmissionFile } from '@/lib/types'
+import type { SubmissionFile } from '@/lib/types'
 
 function formatDate(iso: string | null) {
   if (!iso) return '—'

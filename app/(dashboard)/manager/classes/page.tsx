@@ -1,8 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import Link from 'next/link'
-import { Search, SlidersHorizontal, Users, Calendar, BookOpen } from 'lucide-react'
+import { Search, Users, Calendar, BookOpen } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import {
   ADMIN_CLASSES,

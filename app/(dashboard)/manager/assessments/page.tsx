@@ -5,7 +5,6 @@ import { cn } from '@/lib/utils'
 import { ClipboardList, Search } from 'lucide-react'
 import {
   ADMIN_ASSESSMENTS,
-  type AdminAssessment,
   type AssessmentType,
   type AssessmentStatus,
 } from '@/lib/admin-data'

@@ -1,4 +1,3 @@
-import Link from 'next/link'
 import { cn } from '@/lib/utils'
 import { UserPlus } from 'lucide-react'
 import { ADMIN_STUDENTS, type PaymentStatus } from '@/lib/admin-data'

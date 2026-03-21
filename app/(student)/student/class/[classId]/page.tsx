@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react'
 import { useParams } from 'next/navigation'
-import Link from 'next/link'
 import type { ClassWithTeacher, AssignmentWithSubmission } from '@/lib/types'
 import ClassHeader from '@/components/student/ClassHeader'
 import AssignmentCard from '@/components/student/AssignmentCard'

@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { cn } from '@/lib/utils'
-import { TEACHER_CLASSES, TEACHER_STUDENTS, getClassStudents } from '@/lib/teacher-data'
+import { TEACHER_CLASSES, getClassStudents } from '@/lib/teacher-data'
 import type { AttStatus } from '@/lib/teacher-data'
 
 type StudentStatus = Record<string, AttStatus>
@@ -56,7 +56,7 @@ export default function TakeAttendancePage() {
             <div className="text-center"><p className="text-2xl font-bold text-amber-500">{lateCount}</p><p className="text-gray-400">Late</p></div>
             <div className="text-center"><p className="text-2xl font-bold text-red-600">{absentCount}</p><p className="text-gray-400">Absent</p></div>
           </div>
-          {note && <p className="text-xs text-gray-400 mb-6 italic">"{note}"</p>}
+          {note && <p className="text-xs text-gray-400 mb-6 italic">&quot;{note}&quot;</p>}
           <div className="flex gap-3">
             <button onClick={() => setSubmitted(false)} className="flex-1 py-2 text-sm border border-gray-200 rounded-lg text-gray-600 hover:bg-gray-50 transition-colors">
               Take Another

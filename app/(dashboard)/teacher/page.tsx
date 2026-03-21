@@ -1,12 +1,11 @@
 import Link from 'next/link'
-import { TrendingUp, TrendingDown, ChevronRight, AlertCircle, Bell, Calendar, BookMarked, ClipboardCheck } from 'lucide-react'
+import { TrendingDown, ChevronRight, Calendar, BookMarked } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import {
   TEACHER_CLASSES,
   TEACHER_STUDENTS,
   TEACHER_HW_TASKS,
   TEACHER_SCHEDULE,
-  TEACHER_NOTIFICATIONS,
 } from '@/lib/teacher-data'
 
 // ── Helpers ────────────────────────────────────────────────────
@@ -50,11 +49,9 @@ const examSoon        = TEACHER_STUDENTS.filter(s => s.daysToExam !== null && s.
 const avgAttendance   = Math.round(TEACHER_STUDENTS.reduce((s, x) => s + x.attendancePct, 0) / totalStudents)
 const avgBand         = (TEACHER_STUDENTS.reduce((s, x) => s + x.avgBand, 0) / totalStudents).toFixed(1)
 const hwRate          = Math.round(TEACHER_HW_TASKS.filter(t => t.status !== 'closed').reduce((s, t) => s + (t.totalStudents > 0 ? t.submittedCount / t.totalStudents : 0), 0) / TEACHER_HW_TASKS.filter(t => t.status !== 'closed').length * 100)
-const unreadCount     = TEACHER_NOTIFICATIONS.filter(n => !n.read).length
 const todaySessions   = TEACHER_SCHEDULE.filter(s => s.date === '2026-03-21')
 const overdueTasks    = TEACHER_HW_TASKS.filter(t => t.status === 'overdue')
 const dueTodayTasks   = TEACHER_HW_TASKS.filter(t => t.status === 'due-today')
-const ungradedTasks   = TEACHER_HW_TASKS.filter(t => t.submittedCount > t.gradedCount && t.status !== 'open')
 
 // ── Page ───────────────────────────────────────────────────────
 
@@ -103,7 +100,7 @@ export default function TeacherDashboard() {
           <div className="px-5 py-3 border-b border-gray-100 flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Calendar className="w-4 h-4 text-indigo-500" />
-              <h2 className="text-sm font-semibold text-gray-900">Today's Schedule</h2>
+              <h2 className="text-sm font-semibold text-gray-900">Today&apos;s Schedule</h2>
             </div>
             <Link href="/teacher/schedule" className="text-xs text-indigo-600 hover:underline flex items-center gap-0.5">
               Full schedule <ChevronRight className="w-3 h-3" />
@@ -192,7 +189,7 @@ export default function TeacherDashboard() {
               </div>
             )}
             {overdueTasks.length === 0 && dueTodayTasks.length === 0 && (
-              <p className="text-sm text-gray-400 text-center py-4">You're all caught up! No homework needs attention.</p>
+              <p className="text-sm text-gray-400 text-center py-4">You&apos;re all caught up! No homework needs attention.</p>
             )}
             <Link href="/teacher/homework"
               className="flex items-center justify-center gap-1.5 w-full py-2 text-xs font-medium text-indigo-600 border border-indigo-200 rounded-lg hover:bg-indigo-50 transition-colors">

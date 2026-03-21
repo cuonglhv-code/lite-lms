@@ -389,7 +389,7 @@ export default function StudentDetailPage() {
                           }
                         </p>
                         {sub.feedback && (
-                          <p className="text-xs text-gray-500 mt-1 italic">"{sub.feedback}"</p>
+                          <p className="text-xs text-gray-500 mt-1 italic">&quot;{sub.feedback}&quot;</p>
                         )}
                       </div>
                       {sub.score != null ? (

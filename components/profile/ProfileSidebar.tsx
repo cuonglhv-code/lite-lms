@@ -260,7 +260,7 @@ export default function ProfileSidebar({ user }: Props) {
 // ── Helpers ────────────────────────────────────────────────────
 
 function Field({
-  label, children, editing,
+  label, children,
 }: {
   label: string
   children: React.ReactNode
