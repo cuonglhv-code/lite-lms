@@ -9,7 +9,13 @@
       "Bash(cp -r \"C:/Users/cuong/Jaxtina Coding/lite-lms-temp/.\" \"C:/Users/cuong/Jaxtina Coding/Lite LMS/\")",
       "Bash(rm -rf \"C:/Users/cuong/Jaxtina Coding/lite-lms-temp\")",
       "Bash(npm install:*)",
-      "Bash(npx shadcn@latest init --defaults --yes)"
+      "Bash(npx shadcn@latest init --defaults --yes)",
+      "Bash(npx shadcn@latest add card badge table tabs select input label textarea)",
+      "Bash(npx shadcn@latest add dropdown-menu dialog form)",
+      "Bash(npx shadcn@latest add form)",
+      "Bash(npx tsc:*)",
+      "Bash(npm --version)",
+      "Bash(git --version)"
     ]
   }
 }
