@@ -249,3 +249,21 @@ export interface AssignmentWithDetails extends Assignment {
   attachments: AssignmentAttachment[]
   submission: (Submission & { files: SubmissionFile[] }) | null
 }
+
+// ── Learner Dashboard ──────────────────────────────────────────
+
+export interface CourseSummary {
+  id: string              // class id — links to /student/class/[id]
+  title: string           // class_name
+  courseName: string      // course_name (displayed as provider label)
+  classCode: string
+  teacherName: string
+  schedule: string | null
+  percentComplete: number // 0-100
+  estimatedCompletion: string // formatted date or 'TBD'
+  nextActivity: {
+    title: string
+    type: 'video' | 'reading' | 'practice' | 'writing' | 'listening'
+    durationMinutes: number
+  } | null
+}

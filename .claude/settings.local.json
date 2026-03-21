@@ -29,7 +29,11 @@
       "Bash(find 'C:\\\\Users\\\\cuong\\\\Jaxtina Coding\\\\Lite LMS\\\\lib' -name *.ts -o -name *.tsx)",
       "Bash(python -c \"import sys; text=sys.stdin.read\\(\\); print\\(text[2000:8000]\\)\")",
       "Bash(mkdir -p \"C:/Users/cuong/Jaxtina Coding/Lite LMS/app/\\(student\\)/student/class/[classId]/assignment/[assignmentId]\")",
-      "Bash(mkdir -p \"C:/Users/cuong/Jaxtina Coding/Lite LMS/app/api/student/class/[classId]/assignments\")"
+      "Bash(mkdir -p \"C:/Users/cuong/Jaxtina Coding/Lite LMS/app/api/student/class/[classId]/assignments\")",
+      "Bash(find \"/c/Users/cuong/Jaxtina Coding/Lite LMS/app/\\(dashboard\\)/manager\" -type f)",
+      "Bash(find \"/c/Users/cuong/Jaxtina Coding/Lite LMS/app/\\(dashboard\\)\" -type f -name \"layout.tsx\")",
+      "Bash(find \"/c/Users/cuong/Jaxtina Coding/Lite LMS/app/\\(dashboard\\)\" -type f)",
+      "Bash(find \"app/\\(dashboard\\)/manager\" -type f -o -type d)"
     ]
   }
 }

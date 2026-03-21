@@ -4,8 +4,9 @@ import type {
   ManagerDashboardData, TeacherDashboardData, ClassSummary, AtRiskStudent,
   StatusIndicator,
   Assignment, AssignmentAttachment, Submission, SubmissionFile,
-  ClassWithTeacher, AssignmentWithSubmission,
+  ClassWithTeacher, AssignmentWithSubmission, CourseSummary,
 } from '@/lib/types'
+import type { ActivityType } from '@/lib/dashboard-data'
 
 // ── Users ─────────────────────────────────────────────────────
 
@@ -361,6 +362,81 @@ export async function createSubmissionFile(data: {
 
 export async function deleteSubmissionFile(id: string, submissionId: string): Promise<void> {
   await sql`DELETE FROM submission_files WHERE id = ${id} AND submission_id = ${submissionId}`
+}
+
+// ── Learner dashboard queries ─────────────────────────────────
+
+function inferActivityType(title: string): ActivityType {
+  const t = title.toLowerCase()
+  if (t.includes('video') || t.includes('watch'))    return 'video'
+  if (t.includes('read')  || t.includes('passage'))  return 'reading'
+  if (t.includes('listen'))                           return 'listening'
+  if (t.includes('writ')  || t.includes('essay'))    return 'writing'
+  return 'practice'
+}
+
+export async function getStudentCourseSummaries(studentId: string): Promise<CourseSummary[]> {
+  const { rows } = await sql`
+    SELECT
+      cl.id,
+      cl.class_name,
+      cl.class_code,
+      cl.schedule,
+      cl.end_date,
+      co.name                                                                    AS course_name,
+      u.name                                                                     AS teacher_name,
+      e.target_exam_date,
+      COUNT(a.id)                                                                AS total_asgn,
+      COUNT(s.id) FILTER (WHERE s.status IN ('submitted','returned'))           AS done_asgn,
+      MIN(a.title) FILTER (
+        WHERE a.id IS NOT NULL
+          AND (s.id IS NULL OR s.status = 'not_submitted')
+      )                                                                           AS next_title
+    FROM enrolments e
+    JOIN classes    cl ON cl.id         = e.class_id
+    JOIN courses    co ON co.id         = cl.course_id
+    JOIN users       u ON  u.id         = cl.teacher_id
+    LEFT JOIN assignments a ON a.class_id      = cl.id
+    LEFT JOIN submissions s ON s.assignment_id = a.id AND s.student_id = ${studentId}
+    WHERE e.student_id = ${studentId} AND e.status = 'Active'
+    GROUP BY cl.id, co.name, u.name, e.target_exam_date
+    ORDER BY cl.class_name
+  `
+  return rows.map(r => ({
+    id:           r.id,
+    title:        r.class_name,
+    courseName:   r.course_name,
+    classCode:    r.class_code,
+    teacherName:  r.teacher_name,
+    schedule:     r.schedule,
+    percentComplete: Number(r.total_asgn) > 0
+      ? Math.round((Number(r.done_asgn) / Number(r.total_asgn)) * 100)
+      : 0,
+    estimatedCompletion: r.target_exam_date
+      ? new Date(r.target_exam_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+      : r.end_date
+        ? new Date(r.end_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+        : 'TBD',
+    nextActivity: r.next_title
+      ? { title: r.next_title, type: inferActivityType(r.next_title), durationMinutes: 15 }
+      : null,
+  })) as CourseSummary[]
+}
+
+export async function getMonthlyActivityMap(
+  studentId: string, year: number, month: number
+): Promise<Record<number, 0 | 1 | 2>> {
+  const { rows } = await sql`
+    SELECT EXTRACT(DAY FROM submitted_at)::int AS day
+    FROM submissions
+    WHERE student_id = ${studentId}
+      AND status IN ('submitted', 'returned')
+      AND EXTRACT(YEAR  FROM submitted_at) = ${year}
+      AND EXTRACT(MONTH FROM submitted_at) = ${month}
+  `
+  const map: Record<number, 0 | 1 | 2> = {}
+  for (const r of rows) { map[Number(r.day)] = 1 }
+  return map
 }
 
 // ── Dashboard queries ─────────────────────────────────────────
