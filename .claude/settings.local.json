@@ -15,7 +15,8 @@
       "Bash(npx shadcn@latest add form)",
       "Bash(npx tsc:*)",
       "Bash(npm --version)",
-      "Bash(git --version)"
+      "Bash(git --version)",
+      "Bash(npm run:*)"
     ]
   }
 }
