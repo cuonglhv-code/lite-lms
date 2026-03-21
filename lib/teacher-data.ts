@@ -64,6 +64,7 @@ export interface TeacherSession {
   className: string
   classCode: string
   date: string          // 'YYYY-MM-DD'
+  dayLabel: string
   startTime: string     // 'HH:MM'
   endTime: string
   topicCovered: string
