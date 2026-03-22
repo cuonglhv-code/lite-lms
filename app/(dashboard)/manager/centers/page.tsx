@@ -9,7 +9,7 @@ import { AddCenterModal } from '@/components/modals/AddCenterModal'
 
 export default function ManagerCentersPage() {
   const router = useRouter()
-  const [centers, setCenters] = useState<{ id: string; name: string; address?: string | null; phone?: string | null; email?: string | null; isActive?: boolean; _count?: { students: number; teachers: number; classes: number } }[]>([])
+  const [centers, setCenters] = useState<{ id: string; name: string; address?: string | null; phone?: string | null; email?: string | null; isActive?: boolean; createdAt?: Date; _count?: { students: number; teachers: number; classes: number } }[]>([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
   const [showAddModal, setShowAddModal] = useState(false)
