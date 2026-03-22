@@ -6,7 +6,7 @@ import { BarChart2, Users, BookOpen, CreditCard, GraduationCap, FileText, Downlo
 import { ReportPreviewModal } from '@/components/modals/ReportPreviewModal'
 import { ADMIN_STUDENTS, ADMIN_CLASSES, ADMIN_ASSESSMENTS, ADMIN_PAYMENTS } from '@/lib/admin-data'
 
-export function downloadCSV<T extends object>(data: T[], filename: string) {
+function downloadCSV<T extends object>(data: T[], filename: string) {
   if (!data || data.length === 0) return
   const headers = Object.keys(data[0])
   const csvRows = []
