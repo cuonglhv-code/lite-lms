@@ -1,7 +1,9 @@
 'use server'
 
 import { revalidatePath } from 'next/cache'
-import { sql } from '@vercel/postgres'
+import prisma from '@/lib/prisma'
+import { auth } from '@/lib/auth'
+import { withCenter } from '@/lib/withCenter'
 
 // ── Course Actions ────────────────────────────────────────
 
@@ -14,13 +16,21 @@ export async function createCourse(data: {
   description?: string
 }) {
   try {
-    const { rows } = await sql`
-      INSERT INTO courses (name, code, level, duration_weeks, base_price, description)
-      VALUES (${data.name}, ${data.code}, ${data.level}, ${data.durationWeeks},
-              ${data.basePrice}, ${data.description ?? null})
-      RETURNING *`
+    const session = await auth()
+    if (!session) return { success: false, error: 'Unauthorized' }
+
+    const course = await prisma.course.create({
+      data: {
+        name: data.name,
+        code: data.code,
+        level: data.level,
+        duration_weeks: data.durationWeeks,
+        tuition_fee: data.basePrice,
+        centerId: session.user.centerId,
+      },
+    })
     revalidatePath('/manager/courses')
-    return { success: true, data: rows[0] }
+    return { success: true, data: course }
   } catch (error) {
     console.error('Create course error:', error)
     return { success: false, error: 'Failed to create course' }
@@ -36,24 +46,25 @@ export async function updateCourse(id: string, data: {
   description?: string
 }) {
   try {
-    const updates: string[] = []
-    const values: unknown[] = []
+    const session = await auth()
+    if (!session) return { success: false, error: 'Unauthorized' }
 
-    if (data.name !== undefined) { updates.push(`name = $${updates.length + 1}`); values.push(data.name) }
-    if (data.code !== undefined) { updates.push(`code = $${updates.length + 1}`); values.push(data.code) }
-    if (data.level !== undefined) { updates.push(`level = $${updates.length + 1}`); values.push(data.level) }
-    if (data.durationWeeks !== undefined) { updates.push(`duration_weeks = $${updates.length + 1}`); values.push(data.durationWeeks) }
-    if (data.basePrice !== undefined) { updates.push(`base_price = $${updates.length + 1}`); values.push(data.basePrice) }
-    if (data.description !== undefined) { updates.push(`description = $${updates.length + 1}`); values.push(data.description ?? null) }
-
-    if (updates.length === 0) return { success: true, data: null }
-
-    values.push(id)
-    const query = `UPDATE courses SET ${updates.join(', ')} WHERE id = $${values.length} RETURNING *`
-    const { rows } = await sql.query(query, values)
+    const course = await prisma.course.update({
+      where: { 
+        id,
+        ...withCenter(session.user.centerId)
+      },
+      data: {
+        name: data.name,
+        code: data.code,
+        level: data.level,
+        duration_weeks: data.durationWeeks,
+        tuition_fee: data.basePrice,
+      },
+    })
 
     revalidatePath('/manager/courses')
-    return { success: true, data: rows[0] }
+    return { success: true, data: course }
   } catch (error) {
     console.error('Update course error:', error)
     return { success: false, error: 'Failed to update course' }
@@ -62,7 +73,15 @@ export async function updateCourse(id: string, data: {
 
 export async function deleteCourse(id: string) {
   try {
-    await sql`DELETE FROM courses WHERE id = ${id}`
+    const session = await auth()
+    if (!session) return { success: false, error: 'Unauthorized' }
+
+    await prisma.course.delete({
+      where: { 
+        id,
+        ...withCenter(session.user.centerId)
+      },
+    })
     revalidatePath('/manager/courses')
     return { success: true }
   } catch (error) {
@@ -85,13 +104,25 @@ export async function createClass(data: {
   status: string
 }) {
   try {
-    const { rows } = await sql`
-      INSERT INTO classes (class_code, class_name, course_id, teacher_id, start_date, end_date, schedule, capacity, status)
-      VALUES (${data.classCode}, ${data.className}, ${data.courseId}, ${data.teacherId},
-              ${data.startDate}, ${data.endDate}, ${data.schedule}, ${data.capacity}, ${data.status})
-      RETURNING *`
+    const session = await auth()
+    if (!session) return { success: false, error: 'Unauthorized' }
+
+    const cls = await prisma.class.create({
+      data: {
+        class_code: data.classCode,
+        class_name: data.className,
+        course_id: data.courseId,
+        teacher_id: data.teacherId,
+        start_date: new Date(data.startDate),
+        end_date: new Date(data.endDate),
+        schedule: data.schedule,
+        capacity: data.capacity,
+        status: data.status,
+        centerId: session.user.centerId,
+      },
+    })
     revalidatePath('/manager/classes')
-    return { success: true, data: rows[0] }
+    return { success: true, data: cls }
   } catch (error) {
     console.error('Create class error:', error)
     return { success: false, error: 'Failed to create class' }
@@ -109,26 +140,28 @@ export async function updateClass(id: string, data: {
   status?: string
 }) {
   try {
-    const updates: string[] = []
-    const values: unknown[] = []
+    const session = await auth()
+    if (!session) return { success: false, error: 'Unauthorized' }
 
-    if (data.className !== undefined) { updates.push(`class_name = $${updates.length + 1}`); values.push(data.className) }
-    if (data.courseId !== undefined) { updates.push(`course_id = $${updates.length + 1}`); values.push(data.courseId) }
-    if (data.teacherId !== undefined) { updates.push(`teacher_id = $${updates.length + 1}`); values.push(data.teacherId) }
-    if (data.startDate !== undefined) { updates.push(`start_date = $${updates.length + 1}`); values.push(data.startDate) }
-    if (data.endDate !== undefined) { updates.push(`end_date = $${updates.length + 1}`); values.push(data.endDate) }
-    if (data.schedule !== undefined) { updates.push(`schedule = $${updates.length + 1}`); values.push(data.schedule) }
-    if (data.capacity !== undefined) { updates.push(`capacity = $${updates.length + 1}`); values.push(data.capacity) }
-    if (data.status !== undefined) { updates.push(`status = $${updates.length + 1}`); values.push(data.status) }
-
-    if (updates.length === 0) return { success: true, data: null }
-
-    values.push(id)
-    const query = `UPDATE classes SET ${updates.join(', ')} WHERE id = $${values.length} RETURNING *`
-    const { rows } = await sql.query(query, values)
+    const cls = await prisma.class.update({
+      where: { 
+        id,
+        ...withCenter(session.user.centerId)
+      },
+      data: {
+        class_name: data.className,
+        course_id: data.courseId,
+        teacher_id: data.teacherId,
+        start_date: data.startDate ? new Date(data.startDate) : undefined,
+        end_date: data.endDate ? new Date(data.endDate) : undefined,
+        schedule: data.schedule,
+        capacity: data.capacity,
+        status: data.status,
+      },
+    })
 
     revalidatePath('/manager/classes')
-    return { success: true, data: rows[0] }
+    return { success: true, data: cls }
   } catch (error) {
     console.error('Update class error:', error)
     return { success: false, error: 'Failed to update class' }
@@ -139,13 +172,30 @@ export async function updateClass(id: string, data: {
 
 export async function enrolStudent(studentId: string, classId: string, targetExamDate?: string, notes?: string) {
   try {
-    const { rows } = await sql`
-      INSERT INTO enrolments (student_id, class_id, target_exam_date, notes)
-      VALUES (${studentId}, ${classId}, ${targetExamDate ?? null}, ${notes ?? null})
-      ON CONFLICT (student_id, class_id) DO NOTHING
-      RETURNING *`
+    const session = await auth()
+    if (!session) return { success: false, error: 'Unauthorized' }
+
+    const enrolment = await prisma.enrolment.upsert({
+      where: {
+        student_id_class_id: {
+          student_id: studentId,
+          class_id: classId,
+        },
+      },
+      update: {
+        target_exam_date: targetExamDate ? new Date(targetExamDate) : undefined,
+        notes,
+      },
+      create: {
+        student_id: studentId,
+        class_id: classId,
+        target_exam_date: targetExamDate ? new Date(targetExamDate) : undefined,
+        notes,
+        centerId: session.user.centerId,
+      },
+    })
     revalidatePath('/manager/enrolments')
-    return { success: true, data: rows[0] }
+    return { success: true, data: enrolment }
   } catch (error) {
     console.error('Enrol student error:', error)
     return { success: false, error: 'Failed to enrol student' }
@@ -154,14 +204,22 @@ export async function enrolStudent(studentId: string, classId: string, targetExa
 
 // ── Payment Actions ──────────────────────────────────────
 
-export async function recordPayment(enrolmentId: string, amount: number, paymentDate: string, method: string) {
+export async function recordPayment(amount: number, type: string, description?: string) {
   try {
-    const { rows } = await sql`
-      INSERT INTO payments (enrolment_id, amount, payment_date, payment_method, status)
-      VALUES (${enrolmentId}, ${amount}, ${paymentDate}, ${method}, 'completed')
-      RETURNING *`
+    const session = await auth()
+    if (!session) return { success: false, error: 'Unauthorized' }
+
+    const finance = await prisma.finance.create({
+      data: {
+        amount,
+        type,
+        description,
+        centerId: session.user.centerId,
+      },
+    })
+
     revalidatePath('/manager/finance')
-    return { success: true, data: rows[0] }
+    return { success: true, data: finance }
   } catch (error) {
     console.error('Record payment error:', error)
     return { success: false, error: 'Failed to record payment' }
@@ -174,27 +232,24 @@ export async function createStudent(data: {
   name: string
   email: string
   phone?: string
-  targetBand?: string
 }) {
   try {
-    // Create user account first
-    const hashedPassword = '$2a$10$dummy' // In production, hash properly
-    const { rows: userRows } = await sql`
-      INSERT INTO users (email, name, password_hash, role)
-      VALUES (${data.email}, ${data.name}, ${hashedPassword}, 'student')
-      ON CONFLICT (email) DO NOTHING
-      RETURNING id`
+    const session = await auth()
+    if (!session) return { success: false, error: 'Unauthorized' }
 
-    const userId = userRows[0]?.id
-
-    // Create student profile
-    const { rows: studentRows } = await sql`
-      INSERT INTO students (user_id, name, email, phone)
-      VALUES (${userId ?? null}, ${data.name}, ${data.email}, ${data.phone ?? null})
-      RETURNING *`
+    // Create student profile directly (User creation would be separate usually, 
+    // but here we follow the prompt's implied structure)
+    const student = await prisma.student.create({
+      data: {
+        name: data.name,
+        email: data.email,
+        phone: data.phone,
+        centerId: session.user.centerId,
+      },
+    })
 
     revalidatePath('/manager/students')
-    return { success: true, data: studentRows[0] }
+    return { success: true, data: student }
   } catch (error) {
     console.error('Create student error:', error)
     return { success: false, error: 'Failed to create student' }
@@ -204,19 +259,24 @@ export async function createStudent(data: {
 export async function createTeacher(data: {
   name: string
   email: string
-  phone?: string
 }) {
   try {
-    // Create user account first
-    const hashedPassword = '$2a$10$dummy' // In production, hash properly
-    const { rows: userRows } = await sql`
-      INSERT INTO users (email, name, password_hash, role)
-      VALUES (${data.email}, ${data.name}, ${hashedPassword}, 'teacher')
-      ON CONFLICT (email) DO NOTHING
-      RETURNING id`
+    const session = await auth()
+    if (!session) return { success: false, error: 'Unauthorized' }
+
+    const hashedPassword = '$2a$10$dummy' // Placeholder
+    const user = await prisma.user.create({
+      data: {
+        email: data.email,
+        name: data.name,
+        password_hash: hashedPassword,
+        role: 'teacher',
+        centerId: session.user.centerId,
+      },
+    })
 
     revalidatePath('/manager/teachers')
-    return { success: true, data: { id: userRows[0]?.id, email: data.email, name: data.name } }
+    return { success: true, data: user }
   } catch (error) {
     console.error('Create teacher error:', error)
     return { success: false, error: 'Failed to create teacher' }
@@ -227,27 +287,39 @@ export async function createTeacher(data: {
 
 export async function exportStudentsCSV(): Promise<{ success: boolean; data?: string; error?: string }> {
   try {
-    const { rows } = await sql`
-      SELECT s.name, s.email, s.phone, c.class_name, u.name AS teacher_name, e.status
-      FROM students s
-      LEFT JOIN enrolments e ON e.student_id = s.id
-      LEFT JOIN classes c ON c.id = e.class_id
-      LEFT JOIN users u ON u.id = c.teacher_id
-      ORDER BY s.name`
+    const session = await auth()
+    if (!session) return { success: false, error: 'Unauthorized' }
 
-    if (rows.length === 0) return { success: true, data: 'Student,Email,Phone,Class,Teacher,Status\n' }
+    const students = await prisma.student.findMany({
+      where: withCenter(session.user.centerId),
+      include: {
+        enrolments: {
+          include: {
+            class: {
+              include: {
+                teacher: true
+              }
+            }
+          }
+        }
+      },
+      orderBy: { name: 'asc' }
+    })
+
+    if (students.length === 0) return { success: true, data: 'Student,Email,Phone,Class,Teacher,Status\n' }
 
     const headers = ['Student', 'Email', 'Phone', 'Class', 'Teacher', 'Status']
     const csvLines = [headers.join(',')]
 
-    rows.forEach((row: Record<string, string | null>) => {
+    students.forEach((s) => {
+      const e = s.enrolments[0]
       const values = [
-        `"${row.name ?? ''}"`,
-        `"${row.email ?? ''}"`,
-        `"${row.phone ?? ''}"`,
-        `"${row.class_name ?? ''}"`,
-        `"${row.teacher_name ?? ''}"`,
-        `"${row.status ?? ''}"`,
+        `"${s.name ?? ''}"`,
+        `"${s.email ?? ''}"`,
+        `"${s.phone ?? ''}"`,
+        `"${e?.class?.class_name ?? ''}"`,
+        `"${e?.class?.teacher?.name ?? ''}"`,
+        `"${e?.status ?? ''}"`,
       ]
       csvLines.push(values.join(','))
     })
@@ -256,5 +328,63 @@ export async function exportStudentsCSV(): Promise<{ success: boolean; data?: st
   } catch (error) {
     console.error('Export students CSV error:', error)
     return { success: false, error: 'Failed to export CSV' }
+  }
+}
+
+// ── Center Actions ────────────────────────────────────────
+
+export async function getCenters() {
+  try {
+    const session = await auth()
+    if (!session) return { success: false, error: 'Unauthorized' }
+
+    const centers = await prisma.center.findMany({
+      include: {
+        _count: {
+          select: {
+            teachers: true,
+            students: true,
+            classes: true
+          }
+        }
+      },
+      orderBy: { name: 'asc' }
+    })
+
+    return { success: true, data: centers }
+  } catch (error) {
+    console.error('Get centers error:', error)
+    return { success: false, error: 'Failed to fetch centers' }
+  }
+}
+
+export async function createCenter(data: {
+  name: string
+  address?: string
+  phone?: string
+  email?: string
+}) {
+  try {
+    const session = await auth()
+    const user = session?.user as any
+    if (!session || (user.role !== 'admin' && user.role !== 'academic_manager' && user.role !== 'manager')) {
+      return { success: false, error: 'Unauthorized' }
+    }
+
+    const center = await prisma.center.create({
+      data: {
+        name: data.name,
+        address: data.address,
+        phone: data.phone,
+        email: data.email,
+        isActive: true,
+      }
+    })
+
+    revalidatePath('/manager/centers')
+    return { success: true, data: center }
+  } catch (error) {
+    console.error('Create center error:', error)
+    return { success: false, error: 'Failed to create center' }
   }
 }

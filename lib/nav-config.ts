@@ -15,6 +15,7 @@ import {
   CalendarDays,
   BookMarked,
   Bell,
+  Building2,
   type LucideIcon,
 } from 'lucide-react'
 
@@ -73,6 +74,7 @@ export const MANAGER_NAV_GROUPS: NavGroup[] = [
   {
     label: 'ADMIN',
     items: [
+      { label: 'Centers',     href: '/manager/centers',      icon: Building2 },
       { label: 'Settings',    href: '/manager/settings',     icon: Settings },
     ],
   },

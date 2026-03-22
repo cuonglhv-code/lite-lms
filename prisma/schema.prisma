@@ -1,0 +1,216 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("POSTGRES_PRISMA_URL")
+  directUrl = env("POSTGRES_URL_NON_POOLING")
+}
+
+model Center {
+  id        String   @id @default(cuid())
+  name      String
+  address   String?
+  phone     String?
+  email     String?
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+
+  // Relations
+  teachers   User[]          @relation("CenterTeachers")
+  students   Student[]
+  classes    Class[]
+  courses    Course[]
+  enrolments Enrolment[]
+  finances   Finance[]
+  managers   CenterManager[]
+}
+
+model CenterManager {
+  id        String   @id @default(cuid())
+  centerId  String
+  userId    String
+  role      String   @default("center_manager") // center_manager | academic_manager | admin
+  createdAt DateTime @default(now())
+
+  center Center @relation(fields: [centerId], references: [id])
+  user   User   @relation(fields: [userId], references: [id])
+
+  @@unique([centerId, userId])
+}
+
+model User {
+  id            String   @id @default(uuid())
+  name          String
+  email         String   @unique
+  password_hash String
+  role          String   // teacher | manager | admin
+  created_at    DateTime @default(now())
+
+  // Relations
+  centerId       String?
+  center         Center?         @relation("CenterTeachers", fields: [centerId], references: [id])
+  centerManagers CenterManager[]
+  classes        Class[]         @relation("TeacherClasses")
+  resources      Resource[]
+}
+
+model Course {
+  id             String   @id @default(uuid())
+  code           String   @unique
+  name           String
+  level          String?
+  course_type    String?
+  duration_weeks Int?
+  tuition_fee    Decimal? @db.Decimal(10, 2)
+  active         Boolean  @default(true)
+  created_at     DateTime @default(now())
+
+  // Relations
+  centerId String?
+  center   Center? @relation(fields: [centerId], references: [id])
+  classes  Class[]
+}
+
+model Class {
+  id          String   @id @default(uuid())
+  class_code  String   @unique
+  class_name  String
+  course_id   String
+  teacher_id  String
+  start_date  DateTime? @db.Date
+  end_date    DateTime? @db.Date
+  schedule    String?
+  capacity    Int      @default(20)
+  status      String   @default("Open for enrolment")
+  created_at  DateTime @default(now())
+
+  // Relations
+  centerId   String?
+  center     Center?      @relation(fields: [centerId], references: [id])
+  course     Course       @relation(fields: [course_id], references: [id])
+  teacher    User         @relation("TeacherClasses", fields: [teacher_id], references: [id])
+  enrolments Enrolment[]
+  homework   Homework[]
+  assessments Assessment[]
+  attendance  Attendance[]
+  resources   Resource[]
+}
+
+model Student {
+  id           String   @id @default(uuid())
+  student_code String   @unique
+  name         String
+  email        String?
+  phone        String?
+  created_at   DateTime @default(now())
+
+  // Relations
+  centerId    String?
+  center      Center?      @relation(fields: [centerId], references: [id])
+  enrolments  Enrolment[]
+  homework    Homework[]
+  assessments Assessment[]
+  attendance  Attendance[]
+}
+
+model Enrolment {
+  id               String   @id @default(uuid())
+  student_id       String
+  class_id         String
+  enrol_date       DateTime @default(now()) @db.Date
+  target_exam_date DateTime? @db.Date
+  status           String   @default("Active")
+  notes            String?
+
+  // Relations
+  centerId String?
+  center   Center? @relation(fields: [centerId], references: [id])
+  student  Student @relation(fields: [student_id], references: [id])
+  class    Class   @relation(fields: [class_id], references: [id])
+
+  @@unique([student_id, class_id])
+}
+
+model Homework {
+  id              String   @id @default(uuid())
+  class_id        String
+  student_id      String
+  assigned_date   DateTime @default(now()) @db.Date
+  title           String
+  skill           String?
+  resource_url    String?
+  due_date        DateTime? @db.Date
+  status          String   @default("Assigned")
+  score           Decimal? @db.Decimal(5, 2)
+  teacher_comment String?
+  created_at      DateTime @default(now())
+
+  // Relations
+  class   Class   @relation(fields: [class_id], references: [id])
+  student Student @relation(fields: [student_id], references: [id])
+}
+
+model Assessment {
+  id              String   @id @default(uuid())
+  class_id        String
+  student_id      String
+  assessment_date DateTime @default(now()) @db.Date
+  assessment_type String?
+  assessment_name String?
+  max_score       Decimal? @default(100.00) @db.Decimal(6, 2)
+  score           Decimal? @db.Decimal(6, 2)
+  teacher_comment String?
+  created_at      DateTime @default(now())
+
+  // Relations
+  class   Class   @relation(fields: [class_id], references: [id])
+  student Student @relation(fields: [student_id], references: [id])
+}
+
+model Attendance {
+  id           String   @id @default(uuid())
+  class_id     String
+  student_id   String
+  session_date DateTime @db.Date
+  status       String   @default("Present")
+  notes        String?
+
+  // Relations
+  class   Class   @relation(fields: [class_id], references: [id])
+  student Student @relation(fields: [student_id], references: [id])
+
+  @@unique([class_id, student_id, session_date])
+}
+
+model Resource {
+  id            String   @id @default(uuid())
+  class_id      String
+  title         String
+  url           String?
+  blob_url      String?
+  resource_type String?
+  uploaded_by   String
+  created_at    DateTime @default(now())
+
+  // Relations
+  class    Class @relation(fields: [class_id], references: [id])
+  uploader User  @relation(fields: [uploaded_by], references: [id])
+}
+
+model Finance {
+  id          String   @id @default(uuid())
+  amount      Decimal  @db.Decimal(10, 2)
+  type        String   // Income | Expense
+  description String?
+  date        DateTime @default(now())
+  createdAt   DateTime @default(now())
+
+  // Relations
+  centerId String?
+  center   Center? @relation(fields: [centerId], references: [id])
+}

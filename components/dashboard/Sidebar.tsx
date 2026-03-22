@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation'
 import { signOut } from 'next-auth/react'
 import { cn } from '@/lib/utils'
 import { BookOpen, LogOut } from 'lucide-react'
+import { CenterSwitcher } from './CenterSwitcher'
 import {
   MANAGER_NAV_GROUPS,
   TEACHER_NAV_GROUPS,
@@ -31,7 +32,7 @@ function Badge({ count }: { count: number }) {
 
 export default function Sidebar({ role, userName }: { role: string; userName: string }) {
   const pathname = usePathname()
-  const groups = role === 'manager' ? MANAGER_NAV_GROUPS : TEACHER_NAV_GROUPS
+  const groups = role === 'manager' || role === 'admin' || role === 'academic_manager' ? MANAGER_NAV_GROUPS : TEACHER_NAV_GROUPS
 
   function isActive(href: string) {
     if (href === '/manager' || href === '/teacher') return pathname === href
@@ -46,6 +47,10 @@ export default function Sidebar({ role, userName }: { role: string; userName: st
         <span className="font-bold text-gray-900 text-base tracking-tight">
           Jaxtina<span className="text-indigo-600">LMS</span>
         </span>
+      </div>
+
+      <div className="px-3 pt-4">
+        <CenterSwitcher />
       </div>
 
       {/* Nav groups */}
