@@ -74,6 +74,7 @@ model Course {
   centerId String?
   center   Center? @relation(fields: [centerId], references: [id])
   classes  Class[]
+  assessmentTemplates AssessmentTemplate[]
 }
 
 model Class {
@@ -168,8 +169,30 @@ model Assessment {
   created_at      DateTime @default(now())
 
   // Relations
-  class   Class   @relation(fields: [class_id], references: [id])
-  student Student @relation(fields: [student_id], references: [id])
+  class      Class               @relation(fields: [class_id], references: [id])
+  student    Student             @relation(fields: [student_id], references: [id])
+  templateId String?
+  template   AssessmentTemplate? @relation(fields: [templateId], references: [id])
+}
+
+model AssessmentTemplate {
+  id           String   @id @default(cuid())
+  title        String
+  type         String   // "Homework" | "Test" | "Mock"
+  skill        String?  // "Writing" | "Reading" | "Listening" | "Speaking" | "Full Paper"
+  description  String?  // Instructions for students
+  markScheme   String?  // Notes for teachers
+  targetBand   Float?   // e.g. 5.0, 6.0, 6.5
+  durationMins Int?     // e.g. 60 minutes
+  week         Int?     // Suggested week in course (e.g. week 3)
+  courseId     String
+  course       Course   @relation(fields: [courseId], references: [id])
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  // Link to live assessments created from this template
+  assessments  Assessment[]
 }
 
 model Attendance {
