@@ -388,3 +388,234 @@ export async function createCenter(data: {
     return { success: false, error: 'Failed to create center' }
   }
 }
+export async function getClassDetails(id: string) {
+  try {
+    const session = await auth()
+    if (!session) return { success: false, error: 'Unauthorized' }
+
+    const cls = await prisma.class.findUnique({
+      where: { 
+        id,
+        ...withCenter(session.user.centerId)
+      },
+      include: {
+        teacher: true,
+        course: true,
+        enrolments: {
+          include: {
+            student: true
+          }
+        },
+        assessments: {
+          orderBy: { assessment_date: 'desc' }
+        },
+        attendance: {
+          include: {
+            student: true
+          },
+          orderBy: { session_date: 'desc' }
+        },
+        homework: true,
+      }
+    })
+
+    if (!cls) return { success: false, error: 'Class not found' }
+    return { success: true, data: cls }
+  } catch (error) {
+    console.error('Get class details error:', error)
+    return { success: false, error: 'Failed to fetch class details' }
+  }
+}
+
+export async function getStudentDetails(id: string) {
+  try {
+    const session = await auth()
+    if (!session) return { success: false, error: 'Unauthorized' }
+
+    const student = await prisma.student.findUnique({
+      where: { 
+        id,
+        ...withCenter(session.user.centerId)
+      },
+      include: {
+        enrolments: {
+          include: {
+            class: {
+              include: {
+                teacher: true,
+                course: true
+              }
+            }
+          }
+        },
+        assessments: {
+          orderBy: { assessment_date: 'desc' }
+        },
+        attendance: {
+          include: {
+            class: true
+          },
+          orderBy: { session_date: 'desc' }
+        },
+        homework: {
+          orderBy: { assigned_date: 'desc' }
+        }
+      }
+    })
+
+    if (!student) return { success: false, error: 'Student not found' }
+    return { success: true, data: student }
+  } catch (error) {
+    console.error('Get student details error:', error)
+    return { success: false, error: 'Failed to fetch student details' }
+  }
+}
+
+export async function getCenterDetails(id: string) {
+  try {
+    const session = await auth()
+    if (!session) return { success: false, error: 'Unauthorized' }
+
+    const center = await prisma.center.findUnique({
+      where: { id },
+      include: {
+        teachers: true,
+        students: true,
+        classes: {
+          include: {
+            teacher: true
+          }
+        },
+        finances: {
+          orderBy: { date: 'desc' },
+          take: 50
+        }
+      }
+    })
+
+    if (!center) return { success: false, error: 'Center not found' }
+    return { success: true, data: center }
+  } catch (error) {
+    console.error('Get center details error:', error)
+    return { success: false, error: 'Failed to fetch center' }
+  }
+}
+
+export async function updateStudent(id: string, data: {
+  name?: string
+  email?: string
+  phone?: string
+}) {
+  try {
+    const session = await auth()
+    if (!session) return { success: false, error: 'Unauthorized' }
+
+    const student = await prisma.student.update({
+      where: { 
+        id,
+        ...withCenter(session.user.centerId)
+      },
+      data: {
+        name: data.name,
+        email: data.email,
+        phone: data.phone,
+      },
+    })
+
+    revalidatePath(`/manager/students/${id}`)
+    revalidatePath('/manager/students')
+    return { success: true, data: student }
+  } catch (error) {
+    console.error('Update student error:', error)
+    return { success: false, error: 'Failed to update student' }
+  }
+}
+
+export async function updateCenter(id: string, data: {
+  name?: string
+  address?: string
+  phone?: string
+  email?: string
+  isActive?: boolean
+}) {
+  try {
+    const session = await auth()
+    if (!session || !session.user || (session.user.role !== 'admin' && session.user.role !== 'academic_manager' && session.user.role !== 'manager')) {
+      return { success: false, error: 'Unauthorized' }
+    }
+
+    const center = await prisma.center.update({
+      where: { id },
+      data: {
+        name: data.name,
+        address: data.address,
+        phone: data.phone,
+        email: data.email,
+        isActive: data.isActive,
+      }
+    })
+
+    revalidatePath(`/manager/centers/${id}`)
+    revalidatePath('/manager/centers')
+    return { success: true, data: center }
+  } catch (error) {
+    console.error('Update center error:', error)
+    return { success: false, error: 'Failed to update center' }
+  }
+}
+
+export async function getStudents() {
+  try {
+    const session = await auth()
+    if (!session) return { success: false, error: 'Unauthorized' }
+
+    const students = await prisma.student.findMany({
+      where: withCenter(session.user.centerId),
+      include: {
+        enrolments: {
+          include: {
+            class: {
+              include: {
+                course: true
+              }
+            }
+          }
+        },
+        assessments: {
+          orderBy: { assessment_date: 'desc' }
+        },
+        attendance: true
+      },
+      orderBy: { created_at: 'desc' }
+    })
+
+    return { success: true, data: students }
+  } catch (error) {
+    console.error('Get students error:', error)
+    return { success: false, error: 'Failed to fetch students' }
+  }
+}
+
+export async function getClasses() {
+  try {
+    const session = await auth()
+    if (!session) return { success: false, error: 'Unauthorized' }
+
+    const classes = await prisma.class.findMany({
+      where: withCenter(session.user.centerId),
+      include: {
+        teacher: true,
+        course: true,
+        enrolments: true,
+        assessments: true,
+        attendance: true
+      },
+      orderBy: { created_at: 'desc' }
+    })
+
+    return { success: true, data: classes }
+  } catch (error) {
+    console.error('Get classes error:', error)
+    return { success: false, error: 'Failed to fetch classes' }
+  }
+}
