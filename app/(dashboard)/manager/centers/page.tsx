@@ -21,7 +21,7 @@ export default function ManagerCentersPage() {
   async function loadCenters() {
     setLoading(true)
     const res = await getCenters()
-    if (res.success) {
+    if (res.success && res.data) {
       setCenters(res.data)
     }
     setLoading(false)

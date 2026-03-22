@@ -241,6 +241,7 @@ export async function createStudent(data: {
     // but here we follow the prompt's implied structure)
     const student = await prisma.student.create({
       data: {
+        student_code: `STU-${Date.now().toString(36).toUpperCase()}`,
         name: data.name,
         email: data.email,
         phone: data.phone,
