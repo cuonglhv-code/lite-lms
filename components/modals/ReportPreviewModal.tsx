@@ -3,7 +3,7 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 
-export function ReportPreviewModal({ title, data, onClose }: { title: string; data: any[]; onClose: () => void }) {
+export function ReportPreviewModal({ title, data, onClose }: { title: string; data: object[]; onClose: () => void }) {
   if (!data || data.length === 0) return null
   const headers = Object.keys(data[0])
 
@@ -26,7 +26,7 @@ export function ReportPreviewModal({ title, data, onClose }: { title: string; da
               {data.slice(0, 5).map((row, idx) => (
                 <tr key={idx} className="hover:bg-gray-50">
                   {headers.map(h => (
-                    <td key={h} className="px-4 py-2 text-gray-800 break-words max-w-xs">{String(row[h])}</td>
+                    <td key={h} className="px-4 py-2 text-gray-800 break-words max-w-xs">{String((row as Record<string, unknown>)[h])}</td>
                   ))}
                 </tr>
               ))}

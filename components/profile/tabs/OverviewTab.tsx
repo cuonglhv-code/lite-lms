@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Pencil, Plus, ExternalLink, GraduationCap, X, Check } from 'lucide-react'
+import { Pencil, Plus, ExternalLink, GraduationCap, Check } from 'lucide-react'
 import type { ProfileUser } from '@/lib/profile-data'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'

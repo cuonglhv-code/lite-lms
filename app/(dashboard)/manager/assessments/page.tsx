@@ -61,7 +61,7 @@ export default function ManagerAssessmentsPage() {
   const [tab,    setTab]    = useState<TabKey>('all')
   const [search, setSearch] = useState('')
   const [showCreate, setShowCreate] = useState(false)
-  const [viewingAssessment, setViewingAssessment] = useState<any | null>(null)
+  const [viewingAssessment, setViewingAssessment] = useState<typeof ADMIN_ASSESSMENTS[0] | null>(null)
 
   const filtered = ADMIN_ASSESSMENTS.filter(a => {
     if (search && !a.name.toLowerCase().includes(search.toLowerCase()) && !a.className.toLowerCase().includes(search.toLowerCase())) return false

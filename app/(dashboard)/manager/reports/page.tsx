@@ -4,9 +4,9 @@ import { useState } from 'react'
 import { cn } from '@/lib/utils'
 import { BarChart2, Users, BookOpen, CreditCard, GraduationCap, FileText, Download, ExternalLink } from 'lucide-react'
 import { ReportPreviewModal } from '@/components/modals/ReportPreviewModal'
-import { ADMIN_STUDENTS, ADMIN_CLASSES, ADMIN_ASSESSMENTS, ADMIN_PAYMENTS, ADMIN_TEACHERS } from '@/lib/admin-data'
+import { ADMIN_STUDENTS, ADMIN_CLASSES, ADMIN_ASSESSMENTS, ADMIN_PAYMENTS } from '@/lib/admin-data'
 
-export function downloadCSV(data: any[], filename: string) {
+export function downloadCSV<T extends object>(data: T[], filename: string) {
   if (!data || data.length === 0) return
   const headers = Object.keys(data[0])
   const csvRows = []
@@ -15,7 +15,7 @@ export function downloadCSV(data: any[], filename: string) {
   
   for (const row of data) {
     const values = headers.map(header => {
-      const val = row[header]
+      const val = (row as Record<string, unknown>)[header]
       return `"${String(val).replace(/"/g, '""')}"`
     })
     csvRows.push(values.join(','))
@@ -32,7 +32,7 @@ export function downloadCSV(data: any[], filename: string) {
   document.body.removeChild(a)
 }
 
-function getReportData(id: string) {
+function getReportData(id: string): object[] {
   switch (id) {
     case 'student-progress': return ADMIN_STUDENTS
     case 'class-performance': return ADMIN_CLASSES
@@ -128,7 +128,7 @@ const RECENT_REPORTS: RecentReport[] = [
 // ── Page ───────────────────────────────────────────────────────
 
 export default function ManagerReportsPage() {
-  const [previewData, setPreviewData] = useState<any[] | null>(null)
+  const [previewData, setPreviewData] = useState<object[] | null>(null)
   const [previewTitle, setPreviewTitle] = useState<string | null>(null)
   
   function handleDownloadRecent(name: string) {
