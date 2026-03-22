@@ -24,15 +24,28 @@ export default function ClassAssignmentsPage() {
 
   useEffect(() => {
     async function load() {
-      const [clsRes, assignRes] = await Promise.all([
-        fetch(`/api/classes/${classId}`).then(r => r.json()),
-        fetch(`/api/student/class/${classId}/assignments`).then(r => r.json()),
-      ])
-      setCls(clsRes)
-      setAssignments(Array.isArray(assignRes) ? assignRes : [])
-      setLoading(false)
+      try {
+        const [clsRes, assignRes] = await Promise.all([
+          fetch(`/api/classes/${classId}`).then(r => {
+            if (!r.ok) throw new Error('Failed to fetch class')
+            return r.json()
+          }),
+          fetch(`/api/student/class/${classId}/assignments`).then(r => {
+            if (!r.ok) throw new Error('Failed to fetch assignments')
+            return r.json()
+          }),
+        ])
+        setCls(clsRes)
+        setAssignments(Array.isArray(assignRes) ? assignRes : [])
+      } catch (error) {
+        console.error('Load class error:', error)
+        setCls(null)
+        setAssignments([])
+      } finally {
+        setLoading(false)
+      }
     }
-    load()
+    if (classId) load()
   }, [classId])
 
   const filtered = assignments.filter(a => {

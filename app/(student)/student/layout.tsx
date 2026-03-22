@@ -9,7 +9,10 @@ export default async function StudentLayout({ children }: { children: React.Reac
 
   const userName = session.user.name ?? ''
   const userEmail = session.user.email ?? ''
-  const userInitial = (userName[0] ?? 'S').toUpperCase()
+  // For Vietnamese names (Family Middle Given), use first letter of given name (last token)
+  const nameParts = userName.split(' ')
+  const givenName = nameParts[nameParts.length - 1] || userName
+  const userInitial = (givenName[0] ?? 'S').toUpperCase()
 
   return (
     <div className="min-h-screen bg-gray-50">

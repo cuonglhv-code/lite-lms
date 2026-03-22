@@ -9,7 +9,7 @@ import { useState } from 'react'
 import {
   Search, Bell, ChevronDown, BookOpen, Play, CheckCircle,
   AlertTriangle, Star, Settings, LogOut, CreditCard,
-  BarChart2, Users, Calendar, Zap,
+  BarChart2, Users, Zap,
 } from 'lucide-react'
 
 // ── Section wrapper ─────────────────────────────────────────
@@ -24,7 +24,7 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 }
 
 // ── Colour swatch ────────────────────────────────────────────
-function Swatch({ hex, label, textDark = false }: { hex: string; label: string; textDark?: boolean }) {
+function Swatch({ hex, label }: { hex: string; label: string }) {
   return (
     <div className="flex flex-col items-center gap-1.5">
       <div
@@ -190,8 +190,8 @@ export default function DesignShowcase() {
               <div className="flex flex-wrap gap-5">
                 <Swatch hex="#0056D2" label="brand" />
                 <Swatch hex="#0040A8" label="brand-hover" />
-                <Swatch hex="#E8F1FB" label="brand-light" textDark />
-                <Swatch hex="#F5F9FF" label="brand-subtle" textDark />
+                <Swatch hex="#E8F1FB" label="brand-light" />
+                <Swatch hex="#F5F9FF" label="brand-subtle" />
               </div>
             </div>
             <div>
@@ -203,20 +203,20 @@ export default function DesignShowcase() {
                   ['#9CA3AF','400·placeholder'], ['#6B7280','500·secondary'],
                   ['#374151','600·body'], ['#1F2937','700·heading'],
                   ['#111827','800·darkest'],
-                ].map(([hex, label]) => <Swatch key={hex} hex={hex} label={label} textDark={['#F9FAFB','#F3F4F6','#E5E7EB','#D1D5DB'].includes(hex)} />)}
+                ].map(([hex, label]) => <Swatch key={hex} hex={hex} label={label} />)}
               </div>
             </div>
             <div>
               <p className="meta-text mb-3 font-semibold">Semantic</p>
               <div className="flex flex-wrap gap-5">
                 <Swatch hex="#1DB954" label="success" />
-                <Swatch hex="#D1FAE5" label="success-light" textDark />
+                <Swatch hex="#D1FAE5" label="success-light" />
                 <Swatch hex="#FBBF24" label="warning" />
-                <Swatch hex="#FFFBEB" label="warning-light" textDark />
+                <Swatch hex="#FFFBEB" label="warning-light" />
                 <Swatch hex="#EF4444" label="danger" />
-                <Swatch hex="#FEF2F2" label="danger-light" textDark />
+                <Swatch hex="#FEF2F2" label="danger-light" />
                 <Swatch hex="#7C3AED" label="premium" />
-                <Swatch hex="#F3E8FF" label="premium-light" textDark />
+                <Swatch hex="#F3E8FF" label="premium-light" />
               </div>
             </div>
           </div>

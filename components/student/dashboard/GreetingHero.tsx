@@ -14,11 +14,12 @@ function getGreeting(): string {
 }
 
 export default function GreetingHero({ userName, goalText }: Props) {
-  const firstName = userName.split(' ')[0]
+  const nameParts = userName.split(' ')
+  const givenName = nameParts[nameParts.length - 1] // Vietnamese names: given name is last token
   return (
     <div className="mb-2">
       <h1 className="text-3xl font-bold text-gray-900 mb-2">
-        {getGreeting()}, {firstName} 👋
+        {getGreeting()}, {givenName} 👋
       </h1>
       <div className="flex items-center gap-2 flex-wrap">
         <div className="flex items-center gap-1.5 bg-indigo-50 border border-indigo-100 rounded-full px-3 py-1.5">

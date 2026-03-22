@@ -122,3 +122,31 @@ INSERT INTO attendance (class_id, student_id, session_date, status) VALUES
   ('20000000-0000-0000-0000-000000000003', '30000000-0000-0000-0000-000000000007', '2026-03-09', 'Present'),
   ('20000000-0000-0000-0000-000000000003', '30000000-0000-0000-0000-000000000006', '2026-03-11', 'Present'),
   ('20000000-0000-0000-0000-000000000003', '30000000-0000-0000-0000-000000000007', '2026-03-11', 'Late');
+
+-- ============================================================
+-- Seed: assignments and submissions (student-facing)
+-- ============================================================
+
+-- Assignments for Foundation 1 – Class A (c1)
+INSERT INTO assignments (id, class_id, title, description, due_at, max_points) VALUES
+  ('40000000-0000-0000-0000-000000000001', '20000000-0000-0000-0000-000000000001', 'Reading Practice Test 1', 'Complete the reading practice test covering skimming and scanning techniques.', '2026-03-20', 100),
+  ('40000000-0000-0000-0000-000000000002', '20000000-0000-0000-0000-000000000001', 'Writing Task 2 – Problem Solution', 'Write a full IELTS Task 2 problem-solution essay on environmental issues.', '2026-04-01', 100),
+  ('40000000-0000-0000-0000-000000000003', '20000000-0000-0000-0000-000000000001', 'Listening Section 3 Practice', 'Complete a practice listening test focusing on Section 3.', '2026-03-25', 100);
+
+-- Assignments for IELTS Writing – Band 6 (c3)
+INSERT INTO assignments (id, class_id, title, description, due_at, max_points) VALUES
+  ('40000000-0000-0000-0000-000000000004', '20000000-0000-0000-0000-000000000003', 'Task 1 Report Practice', 'Write a 150-word report based on provided data or diagram.', '2026-03-27', 100),
+  ('40000000-0000-0000-0000-000000000005', '20000000-0000-0000-0000-000000000003', 'Task 2 Essay – Agree/Disagree', 'Write a 250-word essay responding to an agree/disagree prompt.', '2026-04-03', 100);
+
+-- Student submissions for class 1
+-- Student 1 (Tran Minh Duc) - Writing Task 2
+INSERT INTO submissions (id, assignment_id, student_id, submitted_at, status, grade, feedback_text, returned_at) VALUES
+  ('50000000-0000-0000-0000-000000000001', '40000000-0000-0000-0000-000000000002', '30000000-0000-0000-0000-000000000001', '2026-03-31 19:45:00', 'returned', 72, 'Good structure and task achievement. Work on lexical range.', '2026-03-31 21:30:00');
+
+-- Student 2 (Le Thi Hoa) - Writing Task 2 - Not yet submitted
+INSERT INTO submissions (id, assignment_id, student_id, status) VALUES
+  ('50000000-0000-0000-0000-000000000002', '40000000-0000-0000-0000-000000000002', '30000000-0000-0000-0000-000000000002', 'not_submitted');
+
+-- Student 3 (Nguyen Van A) - Writing Task 2 - Not yet submitted
+INSERT INTO submissions (id, assignment_id, student_id, status) VALUES
+  ('50000000-0000-0000-0000-000000000003', '40000000-0000-0000-0000-000000000002', '30000000-0000-0000-0000-000000000003', 'not_submitted');

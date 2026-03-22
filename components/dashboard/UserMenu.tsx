@@ -6,7 +6,7 @@ import { useRef, useState, useEffect } from 'react'
 import Link from 'next/link'
 import {
   ChevronDown, User, ShoppingBag, Settings, Bell,
-  Trophy, HelpCircle, LogOut, Zap,
+  Trophy, HelpCircle, LogOut,
 } from 'lucide-react'
 import { useOnClickOutside } from '@/hooks/useOnClickOutside'
 import { PROFILE_USER } from '@/lib/profile-data'
@@ -40,7 +40,7 @@ async function signOut() {
 export default function UserMenu({ userName, userEmail, userInitial }: Props) {
   const [open, setOpen] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
-  const { hasUpdates, isPremium } = PROFILE_USER
+  const { hasUpdates } = PROFILE_USER
 
   useOnClickOutside(ref, () => setOpen(false))
 
@@ -128,26 +128,6 @@ export default function UserMenu({ userName, userEmail, userInitial }: Props) {
               <span>Log Out</span>
             </button>
           </div>
-
-          {/* ── Upgrade strip (free plan only) ── */}
-          {!isPremium && (
-            <>
-              <div className="h-px bg-gray-100 mx-2" />
-              <div className="px-4 py-3 flex items-center justify-between gap-3 rounded-b-2xl bg-gradient-to-r from-indigo-50 to-blue-50">
-                <div className="flex items-center gap-2 min-w-0">
-                  <Zap className="w-4 h-4 text-indigo-500 shrink-0" />
-                  <p className="text-xs font-medium text-indigo-800 truncate">Upgrade to Premium</p>
-                </div>
-                <button
-                  onClick={() => setOpen(false)}
-                  className="shrink-0 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700
-                             rounded-lg px-3 py-1.5 transition-colors"
-                >
-                  Upgrade
-                </button>
-              </div>
-            </>
-          )}
         </div>
       )}
     </div>

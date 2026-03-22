@@ -28,6 +28,8 @@ export default function HomeworkHubPage() {
   const [tab,         setTab]         = useState<TabKey>('active')
   const [search,      setSearch]      = useState('')
   const [showModal,   setShowModal]   = useState(false)
+  const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null)
+  const [gradingData, setGradingData] = useState<Record<string, { score: number | null; feedback: string }>>({})
 
   const activeTasks   = TEACHER_HW_TASKS.filter(t => t.status !== 'closed')
   const archivedTasks = TEACHER_HW_TASKS.filter(t => t.status === 'closed')
@@ -120,7 +122,7 @@ export default function HomeworkHubPage() {
                     <td className="px-4 py-3 text-center text-sm">{t.gradedCount}/{t.submittedCount}</td>
                     <td className="px-4 py-3 text-center"><StatusBadge status={t.status} /></td>
                     <td className="px-4 py-3 text-right">
-                      <button onClick={() => setTab('submissions')}
+                      <button onClick={() => { setSelectedTaskId(t.id); setTab('submissions') }}
                         className="text-xs text-indigo-600 hover:text-indigo-800 font-medium">
                         {t.submittedCount > t.gradedCount ? 'Grade' : 'View'}
                       </button>
@@ -142,19 +144,47 @@ export default function HomeworkHubPage() {
               <BookMarked className="w-8 h-8 mb-2" />
               <p className="text-sm">All caught up — no submissions to grade.</p>
             </div>
-          ) : gradingTasks.map(task => {
-            const subs = TEACHER_SUBMISSIONS.filter(s => s.taskId === task.id)
-            return (
-              <div key={task.id} className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-                <div className="px-5 py-3 border-b border-gray-100 flex items-center justify-between bg-gray-50">
-                  <div>
-                    <p className="font-semibold text-gray-900">{task.name}</p>
-                    <p className="text-xs text-gray-400">{task.classCode} · Due {task.dueDate} · {task.submittedCount}/{task.totalStudents} submitted</p>
-                  </div>
-                  <button className="text-xs bg-indigo-600 text-white px-3 py-1.5 rounded-lg hover:bg-indigo-700 transition-colors font-medium">
-                    Save All
-                  </button>
-                </div>
+          ) : (
+            (() => {
+              const tasksToShow = selectedTaskId
+                ? TEACHER_HW_TASKS.filter(t => t.id === selectedTaskId)
+                : gradingTasks
+              return tasksToShow.map(task => {
+                const subs = TEACHER_SUBMISSIONS.filter(s => s.taskId === task.id)
+                const handleSaveAll = async () => {
+                  try {
+                    const updates = subs.map(async (sub) => {
+                      const score = gradingData[sub.id]?.score ?? sub.score
+                      const feedback = gradingData[sub.id]?.feedback ?? sub.feedback
+                      if (score === null) return
+
+                      const res = await fetch(`/api/submissions/${sub.id}/grade`, {
+                        method: 'PATCH',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ score, feedback, status: 'returned' })
+                      })
+                      return res.json()
+                    })
+                    await Promise.all(updates)
+                    alert('Grades saved ✓')
+                    setGradingData({})
+                  } catch (error) {
+                    console.error('Save grades error:', error)
+                    alert('Failed to save grades')
+                  }
+                }
+
+                return (
+                  <div key={task.id} className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+                    <div className="px-5 py-3 border-b border-gray-100 flex items-center justify-between bg-gray-50">
+                      <div>
+                        <p className="font-semibold text-gray-900">{task.name}</p>
+                        <p className="text-xs text-gray-400">{task.classCode} · Due {task.dueDate} · {task.submittedCount}/{task.totalStudents} submitted</p>
+                      </div>
+                      <button onClick={handleSaveAll} className="text-xs bg-indigo-600 text-white px-3 py-1.5 rounded-lg hover:bg-indigo-700 transition-colors font-medium">
+                        Save All
+                      </button>
+                    </div>
                 <table className="w-full text-sm">
                   <thead className="border-b border-gray-50">
                     <tr className="text-xs text-gray-400">
@@ -173,7 +203,11 @@ export default function HomeworkHubPage() {
                         <td className="px-4 py-2.5 text-center">
                           {sub.subStatus === 'submitted' || sub.subStatus === 'flagged' ? (
                             <input type="number" min={0} max={9} step={0.5}
-                              defaultValue={sub.score ?? ''}
+                              value={gradingData[sub.id]?.score ?? sub.score ?? ''}
+                              onChange={(e) => setGradingData({
+                                ...gradingData,
+                                [sub.id]: { ...gradingData[sub.id], score: e.target.value ? parseFloat(e.target.value) : null, feedback: gradingData[sub.id]?.feedback ?? sub.feedback ?? '' }
+                              })}
                               placeholder="—"
                               className="w-16 text-center text-sm border border-gray-200 rounded-lg px-2 py-1 focus:outline-none focus:ring-2 focus:ring-indigo-400"
                             />
@@ -182,7 +216,11 @@ export default function HomeworkHubPage() {
                         <td className="px-4 py-2.5">
                           {sub.subStatus !== 'not-submitted' && (
                             <input type="text" placeholder="Add feedback…"
-                              defaultValue={sub.feedback}
+                              value={gradingData[sub.id]?.feedback ?? sub.feedback ?? ''}
+                              onChange={(e) => setGradingData({
+                                ...gradingData,
+                                [sub.id]: { ...gradingData[sub.id], feedback: e.target.value, score: gradingData[sub.id]?.score ?? sub.score ?? null }
+                              })}
                               className="w-full text-xs border border-gray-200 rounded-lg px-2 py-1 focus:outline-none focus:ring-1 focus:ring-indigo-400"
                             />
                           )}
@@ -195,8 +233,10 @@ export default function HomeworkHubPage() {
                   </tbody>
                 </table>
               </div>
-            )
-          })}
+                )
+              })
+            })()
+          )}
         </div>
       )}
 

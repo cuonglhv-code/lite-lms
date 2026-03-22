@@ -52,6 +52,7 @@ export default function YourWorkPanel({ assignmentId, initialSubmission, initial
           student_id: '',
           submitted_at: null,
           status: 'not_submitted',
+          content: null,
           grade: null,
           feedback_text: null,
           returned_at: null,
@@ -114,6 +115,16 @@ export default function YourWorkPanel({ assignmentId, initialSubmission, initial
         <h3 className="font-semibold text-gray-900">Your work</h3>
         <StatusBadge status={status} />
       </div>
+
+      {/* Submitted text content */}
+      {submission?.content && (
+        <div className="bg-blue-50 border border-blue-100 rounded-lg p-3 space-y-2">
+          <p className="text-xs font-medium text-blue-600">Your response:</p>
+          <p className="text-sm text-blue-900 whitespace-pre-wrap leading-relaxed">
+            {submission.content}
+          </p>
+        </div>
+      )}
 
       {/* File list */}
       {files.length > 0 && (

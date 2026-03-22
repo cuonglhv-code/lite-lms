@@ -216,6 +216,7 @@ export interface Submission {
   student_id: string
   submitted_at: string | null
   status: SubmissionStatus
+  content: string | null // text-based submission
   grade: number | null
   feedback_text: string | null
   returned_at: string | null

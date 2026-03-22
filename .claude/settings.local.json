@@ -33,7 +33,10 @@
       "Bash(find \"/c/Users/cuong/Jaxtina Coding/Lite LMS/app/\\(dashboard\\)/manager\" -type f)",
       "Bash(find \"/c/Users/cuong/Jaxtina Coding/Lite LMS/app/\\(dashboard\\)\" -type f -name \"layout.tsx\")",
       "Bash(find \"/c/Users/cuong/Jaxtina Coding/Lite LMS/app/\\(dashboard\\)\" -type f)",
-      "Bash(find \"app/\\(dashboard\\)/manager\" -type f -o -type d)"
+      "Bash(find \"app/\\(dashboard\\)/manager\" -type f -o -type d)",
+      "Bash(gh run:*)",
+      "Bash(node -e \"const p = require\\(''./node_modules/next-auth/package.json''\\); console.log\\(p.version\\)\")",
+      "Bash(grep -E \"\\\\.\\(tsx?|jsx?\\)$\")"
     ]
   }
 }
