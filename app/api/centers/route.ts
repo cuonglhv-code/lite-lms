@@ -13,7 +13,7 @@ export async function GET() {
       orderBy: { name: 'asc' }
     })
     return NextResponse.json(centers)
-  } catch (error) {
+  } catch {
     return NextResponse.json({ error: 'Failed to fetch centers' }, { status: 500 })
   }
 }

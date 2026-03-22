@@ -32,7 +32,7 @@ export function AddCenterModal({ onClose, onSuccess }: AddCenterModalProps) {
       } else {
         setError(res.error || 'Failed to create center')
       }
-    } catch (err) {
+    } catch {
       setError('An unexpected error occurred')
     } finally {
       setLoading(false)

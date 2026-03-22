@@ -16,12 +16,11 @@ export function CenterProvider({ children }: { children: React.ReactNode }) {
   const { data: session } = useSession()
   const [selectedCenterId, setSelectedCenterId] = useState<string | null>(null)
   const [selectedCenterName, setSelectedCenterName] = useState<string>('All Centers')
-  const [isLoaded, setIsLoaded] = useState(false)
 
   // Determine if the center is fixed based on user role
-  const user = session?.user as any
+  const user = session?.user as { role?: string; centerId?: string | null; centerName?: string } | undefined
   const isFixed = user?.role === 'center_manager' || user?.role === 'teacher'
-  const sessionCenterId = user?.centerId
+  const sessionCenterId = user?.centerId || null
 
   useEffect(() => {
     // 1. If fixed center, always use session value
@@ -39,8 +38,6 @@ export function CenterProvider({ children }: { children: React.ReactNode }) {
       setSelectedCenterId(savedId)
       setSelectedCenterName(savedName || 'Main Center')
     }
-    
-    setIsLoaded(true)
   }, [isFixed, sessionCenterId, user?.centerName])
 
   const setCenter = (id: string | null, name?: string) => {

@@ -311,7 +311,7 @@ export async function exportStudentsCSV(): Promise<{ success: boolean; data?: st
     const headers = ['Student', 'Email', 'Phone', 'Class', 'Teacher', 'Status']
     const csvLines = [headers.join(',')]
 
-    students.forEach((s) => {
+    students.forEach((s: { name: string | null; email: string | null; phone: string | null; enrolments: Array<{ class?: { class_name?: string | null; teacher?: { name?: string | null } | null } | null; status?: string | null }> }) => {
       const e = s.enrolments[0]
       const values = [
         `"${s.name ?? ''}"`,
@@ -366,8 +366,7 @@ export async function createCenter(data: {
 }) {
   try {
     const session = await auth()
-    const user = session?.user as any
-    if (!session || (user.role !== 'admin' && user.role !== 'academic_manager' && user.role !== 'manager')) {
+    if (!session || !session.user || (session.user.role !== 'admin' && session.user.role !== 'academic_manager' && session.user.role !== 'manager')) {
       return { success: false, error: 'Unauthorized' }
     }
 

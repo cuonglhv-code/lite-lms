@@ -2,14 +2,14 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { Search, Building2, MapPin, Phone, Mail, Users, GraduationCap, Presentation } from 'lucide-react'
+import { Search, Building2, MapPin, Phone, Mail, Users } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { getCenters } from '@/app/(dashboard)/manager/actions'
 import { AddCenterModal } from '@/components/modals/AddCenterModal'
 
 export default function ManagerCentersPage() {
   const router = useRouter()
-  const [centers, setCenters] = useState<any[]>([])
+  const [centers, setCenters] = useState<{ id: string; name: string; address?: string | null; phone?: string | null; email?: string | null; isActive?: boolean; _count?: { students: number; teachers: number; classes: number } }[]>([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
   const [showAddModal, setShowAddModal] = useState(false)
