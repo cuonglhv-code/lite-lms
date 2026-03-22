@@ -22,7 +22,7 @@ export default function ManagerCentersPage() {
     setLoading(true)
     const res = await getCenters()
     if (res.success && res.data) {
-      setCenters(res.data)
+      setCenters(res.data as { id: string; name: string; address?: string | null; phone?: string | null; email?: string | null; isActive?: boolean; createdAt?: Date; _count?: { students: number; teachers: number; classes: number } }[])
     }
     setLoading(false)
   }
