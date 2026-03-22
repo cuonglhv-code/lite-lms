@@ -769,7 +769,7 @@ export const TEACHER_NOTIFICATIONS: TeacherNotification[] = [
     priority: 'high', type: 'homework',
     title: '5 students haven\'t submitted Writing Task 2',
     body: 'Due 18 Mar (overdue 3 days) · Foundation 1 – Class A · Nguyen Van A, Pham Van Duc +3.',
-    actionLabel: 'View Submissions', actionHref: '/teacher/homework',
+    actionLabel: 'View Submissions', actionHref: '/teacher/homework?taskId=hw1&tab=submissions',
     createdAt: '3 hours ago', read: false,
   },
   {
@@ -777,7 +777,7 @@ export const TEACHER_NOTIFICATIONS: TeacherNotification[] = [
     priority: 'medium', type: 'homework',
     title: 'Grading overdue: Writing Task 2 – Problem Solution',
     body: 'Assigned 14 Mar · Due 18 Mar · 3 students submitted, none graded yet.',
-    actionLabel: 'Grade Now', actionHref: '/teacher/homework',
+    actionLabel: 'Grade Now', actionHref: '/teacher/homework?taskId=hw1&tab=submissions',
     createdAt: 'Today', read: false,
   },
   {
@@ -785,7 +785,7 @@ export const TEACHER_NOTIFICATIONS: TeacherNotification[] = [
     priority: 'medium', type: 'homework',
     title: '2 students haven\'t submitted Listening Drill',
     body: 'Due today · IELTS Writing – Band 6 · Le Van Minh, Dang Quoc Huy.',
-    actionLabel: 'View Submissions', actionHref: '/teacher/homework',
+    actionLabel: 'View Submissions', actionHref: '/teacher/homework?taskId=hw2&tab=submissions',
     createdAt: 'Today', read: true,
   },
   {

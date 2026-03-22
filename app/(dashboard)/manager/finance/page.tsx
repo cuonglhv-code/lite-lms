@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { cn } from '@/lib/utils'
 import { CreditCard, Search, TrendingDown } from 'lucide-react'
+import { RecordPaymentModal } from '@/components/modals/RecordPaymentModal'
 import {
   ADMIN_PAYMENTS,
   FINANCE_KPIS,
@@ -54,6 +55,8 @@ type TabKey = 'all' | 'overdue' | 'partial' | 'paid'
 export default function ManagerFinancePage() {
   const [tab,    setTab]    = useState<TabKey>('all')
   const [search, setSearch] = useState('')
+  const [showRecordPayment, setShowRecordPayment] = useState(false)
+  const [recordPaymentFor, setRecordPaymentFor] = useState<{ studentName: string, amountDue: number } | null>(null)
 
   const filtered = ADMIN_PAYMENTS.filter(p => {
     if (search && !p.studentName.toLowerCase().includes(search.toLowerCase()) && !p.className.toLowerCase().includes(search.toLowerCase())) return false
@@ -77,7 +80,7 @@ export default function ManagerFinancePage() {
           <h1 className="text-xl font-bold text-gray-900">Finance</h1>
           <p className="text-sm text-gray-500 mt-0.5">Fee collection and payment tracking</p>
         </div>
-        <button className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 transition-colors">
+        <button onClick={() => setShowRecordPayment(true)} className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 transition-colors">
           Record Payment
         </button>
       </div>
@@ -196,7 +199,7 @@ export default function ManagerFinancePage() {
                   <td className="px-4 py-3 text-center"><StatusBadge status={p.status} /></td>
                   <td className="px-4 py-3 text-right">
                     {p.balance > 0 && (
-                      <button className="text-xs text-indigo-600 hover:text-indigo-800 font-medium whitespace-nowrap">
+                      <button onClick={() => setRecordPaymentFor({ studentName: p.studentName, amountDue: p.balance })} className="text-xs text-indigo-600 hover:text-indigo-800 font-medium whitespace-nowrap">
                         Record
                       </button>
                     )}
@@ -213,6 +216,9 @@ export default function ManagerFinancePage() {
           </div>
         )}
       </div>
+
+      {showRecordPayment && <RecordPaymentModal onClose={() => setShowRecordPayment(false)} />}
+      {recordPaymentFor && <RecordPaymentModal prefilledStudentName={recordPaymentFor.studentName} amountDue={recordPaymentFor.amountDue} onClose={() => setRecordPaymentFor(null)} />}
     </div>
   )
 }

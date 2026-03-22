@@ -25,7 +25,7 @@ const ACTIVITY_LABELS: Record<ActivityType, string> = {
   practice:  'Practice',
 }
 
-function OverflowMenu() {
+function OverflowMenu({ courseId }: { courseId: string }) {
   const [open, setOpen] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
 
@@ -48,17 +48,30 @@ function OverflowMenu() {
       </button>
       {open && (
         <div className="absolute right-0 top-8 w-44 bg-white rounded-xl shadow-lg border border-gray-100 py-1 z-10">
-          <button
-            className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+          <Link
+            href={`/student/class/${courseId}`}
+            className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
             onClick={() => setOpen(false)}
           >
-            View syllabus
-          </button>
+            View class
+          </Link>
+          <Link
+            href={`/student/class/${courseId}`}
+            className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+            onClick={() => setOpen(false)}
+          >
+            View assignments
+          </Link>
           <button
             className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"
-            onClick={() => setOpen(false)}
+            onClick={() => {
+              if (confirm('Are you sure you want to unenrol from this course?')) {
+                // unenrol logic mock
+              }
+              setOpen(false)
+            }}
           >
-            Unenroll
+            Unenrol
           </button>
         </div>
       )}
@@ -85,7 +98,7 @@ export default function CourseCard({ course }: Props) {
                          rounded-full px-2 py-0.5 shrink-0">
           {course.classCode}
         </span>
-        <OverflowMenu />
+        <OverflowMenu courseId={course.id} />
       </div>
 
       {/* Row 2: Course title (links to class page) */}

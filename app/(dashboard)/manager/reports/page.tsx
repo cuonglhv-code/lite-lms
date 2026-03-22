@@ -1,5 +1,48 @@
+"use client"
+
+import { useState } from 'react'
 import { cn } from '@/lib/utils'
 import { BarChart2, Users, BookOpen, CreditCard, GraduationCap, FileText, Download, ExternalLink } from 'lucide-react'
+import { ReportPreviewModal } from '@/components/modals/ReportPreviewModal'
+import { ADMIN_STUDENTS, ADMIN_CLASSES, ADMIN_ASSESSMENTS, ADMIN_PAYMENTS, ADMIN_TEACHERS } from '@/lib/admin-data'
+
+export function downloadCSV(data: any[], filename: string) {
+  if (!data || data.length === 0) return
+  const headers = Object.keys(data[0])
+  const csvRows = []
+  
+  csvRows.push(headers.join(','))
+  
+  for (const row of data) {
+    const values = headers.map(header => {
+      const val = row[header]
+      return `"${String(val).replace(/"/g, '""')}"`
+    })
+    csvRows.push(values.join(','))
+  }
+  
+  const blob = new Blob([csvRows.join('\n')], { type: 'text/csv' })
+  const url = window.URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.setAttribute('hidden', '')
+  a.setAttribute('href', url)
+  a.setAttribute('download', `${filename}.csv`)
+  document.body.appendChild(a)
+  a.click()
+  document.body.removeChild(a)
+}
+
+function getReportData(id: string) {
+  switch (id) {
+    case 'student-progress': return ADMIN_STUDENTS
+    case 'class-performance': return ADMIN_CLASSES
+    case 'assessment-analysis': return ADMIN_ASSESSMENTS
+    case 'financial-summary': return ADMIN_PAYMENTS
+    case 'enrolment-report': return ADMIN_STUDENTS
+    case 'at-risk-report': return ADMIN_STUDENTS.filter(s => s.riskFlag === 'critical' || s.riskFlag === 'at-risk')
+    default: return []
+  }
+}
 
 // ── Report type cards ──────────────────────────────────────────
 
@@ -85,6 +128,13 @@ const RECENT_REPORTS: RecentReport[] = [
 // ── Page ───────────────────────────────────────────────────────
 
 export default function ManagerReportsPage() {
+  const [previewData, setPreviewData] = useState<any[] | null>(null)
+  const [previewTitle, setPreviewTitle] = useState<string | null>(null)
+  
+  function handleDownloadRecent(name: string) {
+    alert(`Downloading ${name}...`)
+  }
+
   return (
     <div className="space-y-6">
 
@@ -117,11 +167,11 @@ export default function ManagerReportsPage() {
                   ))}
                 </div>
                 <div className="flex gap-2">
-                  <button className="flex-1 flex items-center justify-center gap-1.5 py-1.5 text-xs font-medium text-indigo-600 border border-indigo-200 rounded-lg hover:bg-indigo-50 transition-colors">
+                  <button onClick={() => { setPreviewTitle(r.title); setPreviewData(getReportData(r.id)) }} className="flex-1 flex items-center justify-center gap-1.5 py-1.5 text-xs font-medium text-indigo-600 border border-indigo-200 rounded-lg hover:bg-indigo-50 transition-colors">
                     <ExternalLink className="w-3 h-3" />
                     Preview
                   </button>
-                  <button className="flex-1 flex items-center justify-center gap-1.5 py-1.5 text-xs font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 transition-colors">
+                  <button onClick={() => downloadCSV(getReportData(r.id), r.title)} className="flex-1 flex items-center justify-center gap-1.5 py-1.5 text-xs font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 transition-colors">
                     <Download className="w-3 h-3" />
                     Export CSV
                   </button>
@@ -160,7 +210,7 @@ export default function ManagerReportsPage() {
                   <td className="px-4 py-3 text-xs text-gray-500">{r.generatedBy}</td>
                   <td className="px-4 py-3 text-center text-xs text-gray-400">{r.size}</td>
                   <td className="px-4 py-3 text-right">
-                    <button className="flex items-center gap-1 text-xs text-indigo-600 hover:text-indigo-800 font-medium">
+                    <button onClick={() => handleDownloadRecent(r.name)} className="flex items-center gap-1 text-xs text-indigo-600 hover:text-indigo-800 font-medium">
                       <Download className="w-3 h-3" />
                       Download
                     </button>
@@ -171,6 +221,8 @@ export default function ManagerReportsPage() {
           </table>
         </div>
       </div>
+
+      {previewData && previewTitle && <ReportPreviewModal title={previewTitle} data={previewData} onClose={() => { setPreviewTitle(null); setPreviewData(null) }} />}
     </div>
   )
 }

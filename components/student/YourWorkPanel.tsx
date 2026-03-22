@@ -13,6 +13,7 @@ interface Props {
 
 export default function YourWorkPanel({ assignmentId, initialSubmission, initialFiles }: Props) {
   const [submission, setSubmission] = useState<Submission | null>(initialSubmission)
+  const [content, setContent] = useState(initialSubmission?.content || '')
   const [files, setFiles] = useState<SubmissionFile[]>(initialFiles)
   const [uploading, setUploading] = useState(false)
   const [submitting, setSubmitting] = useState(false)
@@ -79,7 +80,7 @@ export default function YourWorkPanel({ assignmentId, initialSubmission, initial
     const res = await fetch('/api/student/submissions', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ assignmentId }),
+      body: JSON.stringify({ assignmentId, content }),
     })
     if (res.ok) {
       const data = await res.json()
@@ -117,11 +118,24 @@ export default function YourWorkPanel({ assignmentId, initialSubmission, initial
       </div>
 
       {/* Submitted text content */}
-      {submission?.content && (
+      {!canEdit && submission?.content ? (
         <div className="bg-blue-50 border border-blue-100 rounded-lg p-3 space-y-2">
           <p className="text-xs font-medium text-blue-600">Your response:</p>
           <p className="text-sm text-blue-900 whitespace-pre-wrap leading-relaxed">
             {submission.content}
+          </p>
+        </div>
+      ) : canEdit && (
+        <div className="space-y-2">
+          <p className="text-xs font-medium text-gray-700">Written response</p>
+          <textarea
+            value={content}
+            onChange={(e) => setContent(e.target.value)}
+            placeholder="Type your answer here..."
+            className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 resize-none focus:outline-none focus:ring-2 focus:ring-indigo-500 h-32"
+          />
+          <p className="text-xs text-right text-gray-400 font-medium">
+            {content.trim() ? content.trim().split(/\s+/).length : 0} words
           </p>
         </div>
       )}

@@ -1,8 +1,10 @@
 'use client'
 
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { Search, Users, Calendar, BookOpen } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { CreateClassModal } from '@/components/modals/CreateClassModal'
 import {
   ADMIN_CLASSES,
   type AdminClass,
@@ -78,6 +80,9 @@ function SummaryStrip({ classes }: { classes: AdminClass[] }) {
 type SortKey = 'name' | 'hwPct' | 'avgScore' | 'attendancePct' | 'daysToExam'
 
 export default function ManagerClassesPage() {
+  const router = useRouter()
+  const [showCreate, setShowCreate] = useState(false)
+  
   const [search,     setSearch]     = useState('')
   const [statusFilter, setStatusFilter] = useState<AdminStatusBadge | ''>('')
   const [teacherFilter, setTeacherFilter] = useState('')
@@ -126,7 +131,7 @@ export default function ManagerClassesPage() {
           <h1 className="text-xl font-bold text-gray-900">Classes</h1>
           <p className="text-sm text-gray-500 mt-0.5">{ADMIN_CLASSES.length} active classes</p>
         </div>
-        <button className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 transition-colors">
+        <button onClick={() => setShowCreate(true)} className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 transition-colors">
           + New Class
         </button>
       </div>
@@ -187,7 +192,7 @@ export default function ManagerClassesPage() {
             </thead>
             <tbody className="divide-y divide-gray-50">
               {filtered.map(cls => (
-                <tr key={cls.id} className="hover:bg-gray-50 transition-colors">
+                <tr key={cls.id} className="hover:bg-gray-50 transition-colors cursor-pointer" onClick={() => router.push(`/manager/classes/${cls.id}`)}>
                   <td className="px-4 py-3">
                     <p className="font-medium text-gray-800">{cls.name}</p>
                     <p className="text-xs text-gray-400">{cls.code} · {cls.courseLevel}</p>
@@ -239,6 +244,8 @@ export default function ManagerClassesPage() {
           </div>
         )}
       </div>
+
+      {showCreate && <CreateClassModal onClose={() => setShowCreate(false)} />}
     </div>
   )
 }

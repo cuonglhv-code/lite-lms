@@ -1,7 +1,10 @@
-// Accomplishments tab: stats row, certificates, earned/locked badges
+'use client'
 
-import { Award, Download, BookCheck, Clock, Flame, Zap } from 'lucide-react'
+import { useState } from 'react'
+import { Award, Download, BookCheck, Clock, Flame, Zap, Check } from 'lucide-react'
 import type { Certificate, Badge } from '@/lib/profile-data'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
+import { Button } from '@/components/ui/button'
 
 interface Props {
   certificates: Certificate[]
@@ -15,11 +18,30 @@ interface Props {
 }
 
 export default function AccomplishmentsTab({ certificates, badges, stats }: Props) {
+  const [toastMsg, setToastMsg] = useState('')
+  const [selectedCert, setSelectedCert] = useState<Certificate | null>(null)
+
+  const showToast = (msg: string) => {
+    setToastMsg(msg)
+    setTimeout(() => setToastMsg(''), 3000)
+  }
+
+  const handleDownload = (e: React.MouseEvent) => {
+    e.preventDefault()
+    showToast('Certificate downloaded')
+  }
+
   const earned = badges.filter(b => b.earned)
   const locked = badges.filter(b => !b.earned)
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-5 relative">
+      {toastMsg && (
+        <div className="fixed bottom-4 right-4 bg-gray-900 border border-gray-700 shadow-xl px-4 py-3 rounded-lg flex items-center gap-2 z-50 text-white animate-in slide-in-from-bottom-5 text-sm font-medium">
+          <Check className="w-5 h-5 text-green-400" />
+          {toastMsg}
+        </div>
+      )}
 
       {/* Stats row */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
@@ -49,20 +71,19 @@ export default function AccomplishmentsTab({ certificates, badges, stats }: Prop
                     <p className="text-xs text-gray-500">Issued {cert.issueDate}</p>
                   </div>
                   <div className="flex items-center gap-2 shrink-0">
-                    <a
-                      href={cert.downloadUrl}
+                    <button
+                      onClick={() => setSelectedCert(cert)}
                       className="text-xs font-medium text-indigo-600 hover:text-indigo-800 transition-colors"
                     >
                       View
-                    </a>
-                    <a
-                      href={cert.downloadUrl}
-                      download
+                    </button>
+                    <button
+                      onClick={handleDownload}
                       aria-label="Download certificate"
                       className="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-white transition-colors"
                     >
                       <Download className="w-4 h-4" />
-                    </a>
+                    </button>
                   </div>
                 </li>
               ))}
@@ -78,7 +99,6 @@ export default function AccomplishmentsTab({ certificates, badges, stats }: Prop
         </h3>
 
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-          {/* Earned badges */}
           {earned.map(badge => (
             <div
               key={badge.id}
@@ -93,7 +113,6 @@ export default function AccomplishmentsTab({ certificates, badges, stats }: Prop
             </div>
           ))}
 
-          {/* Locked badges */}
           {locked.map(badge => (
             <div
               key={badge.id}
@@ -108,6 +127,29 @@ export default function AccomplishmentsTab({ certificates, badges, stats }: Prop
         </div>
       </div>
 
+      <Dialog open={!!selectedCert} onOpenChange={() => setSelectedCert(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Certificate of Completion</DialogTitle>
+          </DialogHeader>
+          {selectedCert && (
+            <div className="space-y-4 py-4 text-center">
+              <Award className="w-16 h-16 text-indigo-500 mx-auto" />
+              <h2 className="text-xl font-bold">{selectedCert.courseName}</h2>
+              <p className="text-gray-500">Issued on {selectedCert.issueDate}</p>
+              <p className="text-sm text-gray-600 mt-4 border bg-gray-50 p-4 rounded-xl">
+                This certifies that the student has successfully completed the coursework and assessments for this program.
+              </p>
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setSelectedCert(null)}>Close</Button>
+            <Button onClick={handleDownload}>
+              <Download className="w-4 h-4 mr-2" /> Download PDF
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

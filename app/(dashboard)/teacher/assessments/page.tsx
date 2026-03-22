@@ -1,25 +1,57 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect, Suspense } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { cn } from '@/lib/utils'
 import { TEACHER_CLASSES, TEACHER_ASSESSMENTS, getClassStudents } from '@/lib/teacher-data'
 
 type TabKey = 'record' | 'history'
 
-export default function AssessmentsPage() {
-  const [tab,       setTab]       = useState<TabKey>('history')
-  const [classId,   setClassId]   = useState(TEACHER_CLASSES[0]?.id ?? '')
+function AssessmentsContent() {
+  const searchParams = useSearchParams()
+  const classIdParam = searchParams.get('classId')
+
+  const [tab,       setTab]       = useState<TabKey>(classIdParam ? 'record' : 'history')
+  const [classId,   setClassId]   = useState(classIdParam || TEACHER_CLASSES[0]?.id || '')
   const [assessType,setAssessType]= useState('mock')
   const [assessName,setAssessName]= useState('')
   const [date,      setDate]      = useState('2026-03-21')
   const [scores,    setScores]    = useState<Record<string, string>>({})
   const [saved,     setSaved]     = useState(false)
+  const [savedDraft,setSavedDraft]= useState(false)
+
+  useEffect(() => {
+    if (classId) {
+      const draft = localStorage.getItem(`assessment-draft-${classId}`)
+      if (draft) {
+        try {
+          const parsed = JSON.parse(draft)
+          setAssessType(parsed.assessType || 'mock')
+          setAssessName(parsed.assessName || '')
+          setDate(parsed.date || '2026-03-21')
+          setScores(parsed.scores || {})
+        } catch { }
+      } else {
+        setScores({})
+        setAssessName('')
+      }
+    }
+  }, [classId])
 
   const students   = getClassStudents(classId)
 
   function handleSave() {
     setSaved(true)
+    localStorage.removeItem(`assessment-draft-${classId}`)
     setTimeout(() => setSaved(false), 3000)
+  }
+
+  function handleSaveDraft() {
+    localStorage.setItem(`assessment-draft-${classId}`, JSON.stringify({
+      assessType, assessName, date, scores
+    }))
+    setSavedDraft(true)
+    setTimeout(() => setSavedDraft(false), 3000)
   }
 
   const belowTarget = students.filter(s => {
@@ -224,8 +256,14 @@ export default function AssessmentsPage() {
             </div>
           )}
 
+          {savedDraft && (
+            <div className="bg-blue-50 border border-blue-200 rounded-lg px-4 py-3 text-sm text-blue-700">
+              ✓ Draft saved. You can continue later.
+            </div>
+          )}
+
           <div className="flex gap-3">
-            <button className="flex-1 py-2.5 text-sm border border-gray-200 rounded-xl text-gray-600 hover:bg-gray-50 transition-colors">
+            <button onClick={handleSaveDraft} className="flex-1 py-2.5 text-sm border border-gray-200 rounded-xl text-gray-600 hover:bg-gray-50 transition-colors">
               Save Draft
             </button>
             <button onClick={handleSave}
@@ -236,5 +274,13 @@ export default function AssessmentsPage() {
         </div>
       )}
     </div>
+  )
+}
+
+export default function AssessmentsPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <AssessmentsContent />
+    </Suspense>
   )
 }

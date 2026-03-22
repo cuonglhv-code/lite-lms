@@ -3,6 +3,8 @@
 import { useState } from 'react'
 import { cn } from '@/lib/utils'
 import { ClipboardList, Search } from 'lucide-react'
+import { CreateAssessmentModal } from '@/components/modals/CreateAssessmentModal'
+import { AssessmentDetailModal } from '@/components/modals/AssessmentDetailModal'
 import {
   ADMIN_ASSESSMENTS,
   type AssessmentType,
@@ -58,6 +60,8 @@ type TabKey = 'all' | AssessmentType | 'overdue'
 export default function ManagerAssessmentsPage() {
   const [tab,    setTab]    = useState<TabKey>('all')
   const [search, setSearch] = useState('')
+  const [showCreate, setShowCreate] = useState(false)
+  const [viewingAssessment, setViewingAssessment] = useState<any | null>(null)
 
   const filtered = ADMIN_ASSESSMENTS.filter(a => {
     if (search && !a.name.toLowerCase().includes(search.toLowerCase()) && !a.className.toLowerCase().includes(search.toLowerCase())) return false
@@ -89,7 +93,7 @@ export default function ManagerAssessmentsPage() {
           <h1 className="text-xl font-bold text-gray-900">Assessments</h1>
           <p className="text-sm text-gray-500 mt-0.5">{ADMIN_ASSESSMENTS.length} assessments across all classes</p>
         </div>
-        <button className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 transition-colors">
+        <button onClick={() => setShowCreate(true)} className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 transition-colors">
           + New Assessment
         </button>
       </div>
@@ -163,7 +167,7 @@ export default function ManagerAssessmentsPage() {
             </thead>
             <tbody className="divide-y divide-gray-50">
               {filtered.map(a => (
-                <tr key={a.id} className={cn('hover:bg-gray-50 transition-colors', a.status === 'overdue' && 'bg-red-50/20')}>
+                <tr key={a.id} onClick={() => setViewingAssessment(a)} className={cn('hover:bg-gray-50 transition-colors cursor-pointer', a.status === 'overdue' && 'bg-red-50/20')}>
                   <td className="px-5 py-3">
                     <p className="font-medium text-gray-800">{a.name}</p>
                   </td>
@@ -194,6 +198,9 @@ export default function ManagerAssessmentsPage() {
           </div>
         )}
       </div>
+
+      {showCreate && <CreateAssessmentModal onClose={() => setShowCreate(false)} />}
+      {viewingAssessment && <AssessmentDetailModal assessment={viewingAssessment} onClose={() => setViewingAssessment(null)} />}
     </div>
   )
 }

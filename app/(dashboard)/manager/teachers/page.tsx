@@ -1,5 +1,10 @@
+'use client'
+
+import { useState } from 'react'
 import { cn } from '@/lib/utils'
 import { Mail, BookOpen, Clock, CheckCircle2 } from 'lucide-react'
+import { AddTeacherModal } from '@/components/modals/AddTeacherModal'
+import { TeacherDetailModal } from '@/components/modals/TeacherDetailModal'
 import {
   ADMIN_TEACHERS,
   type AdminTeacher,
@@ -36,9 +41,9 @@ function MetricBar({ value, good, warn }: { value: number; good: number; warn: n
   )
 }
 
-function TeacherCard({ teacher: t }: { teacher: AdminTeacher }) {
+function TeacherCard({ teacher: t, onClick }: { teacher: AdminTeacher, onClick: (t: AdminTeacher) => void }) {
   return (
-    <div className="bg-white rounded-xl border border-gray-200 p-5 hover:shadow-md transition-shadow">
+    <div onClick={() => onClick(t)} className="bg-white rounded-xl border border-gray-200 p-5 hover:shadow-md transition-shadow cursor-pointer">
       {/* Header */}
       <div className="flex items-start justify-between gap-3 mb-4">
         <div className="flex items-center gap-3">
@@ -123,6 +128,9 @@ function TeacherCard({ teacher: t }: { teacher: AdminTeacher }) {
 // ── Page ───────────────────────────────────────────────────────
 
 export default function ManagerTeachersPage() {
+  const [showAdd, setShowAdd] = useState(false)
+  const [viewingTeacher, setViewingTeacher] = useState<AdminTeacher | null>(null)
+
   const totalStudents = ADMIN_TEACHERS.reduce((s, t) => s + t.studentsTotal, 0)
   const avgHwReview   = Math.round(ADMIN_TEACHERS.reduce((s, t) => s + t.hwReviewRate, 0) / ADMIN_TEACHERS.length)
   const avgAttRecord  = Math.round(ADMIN_TEACHERS.reduce((s, t) => s + t.attendanceRecordRate, 0) / ADMIN_TEACHERS.length)
@@ -136,7 +144,7 @@ export default function ManagerTeachersPage() {
           <h1 className="text-xl font-bold text-gray-900">Teachers</h1>
           <p className="text-sm text-gray-500 mt-0.5">{ADMIN_TEACHERS.length} active teachers</p>
         </div>
-        <button className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 transition-colors">
+        <button onClick={() => setShowAdd(true)} className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 transition-colors">
           + Add Teacher
         </button>
       </div>
@@ -158,8 +166,11 @@ export default function ManagerTeachersPage() {
 
       {/* Teacher cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-        {ADMIN_TEACHERS.map(t => <TeacherCard key={t.id} teacher={t} />)}
+        {ADMIN_TEACHERS.map(t => <TeacherCard key={t.id} teacher={t} onClick={setViewingTeacher} />)}
       </div>
+
+      {showAdd && <AddTeacherModal onClose={() => setShowAdd(false)} />}
+      {viewingTeacher && <TeacherDetailModal teacher={viewingTeacher} onClose={() => setViewingTeacher(null)} />}
     </div>
   )
 }

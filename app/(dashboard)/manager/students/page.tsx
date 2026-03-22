@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { Search, Users } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import {
@@ -8,6 +9,7 @@ import {
   type AdminStudent,
   type PaymentStatus,
 } from '@/lib/admin-data'
+import { AddStudentModal } from '@/components/modals/AddStudentModal'
 
 // ── Helpers ────────────────────────────────────────────────────
 
@@ -47,11 +49,13 @@ type RiskFilter = '' | 'critical' | 'at-risk' | 'ok'
 type SortKey = 'name' | 'urgencyScore' | 'attendancePct' | 'avgScore' | 'daysToExam'
 
 export default function ManagerStudentsPage() {
+  const router = useRouter()
   const [search,      setSearch]      = useState('')
   const [riskFilter,  setRiskFilter]  = useState<RiskFilter>('')
   const [classFilter, setClassFilter] = useState('')
   const [sortKey,     setSortKey]     = useState<SortKey>('urgencyScore')
   const [sortAsc,     setSortAsc]     = useState(false)
+  const [showAddStudentModal, setShowAddStudentModal] = useState(false)
 
   const classes = Array.from(new Set(ADMIN_STUDENTS.map(s => s.className)))
 
@@ -99,7 +103,10 @@ export default function ManagerStudentsPage() {
           <h1 className="text-xl font-bold text-gray-900">Students</h1>
           <p className="text-sm text-gray-500 mt-0.5">{ADMIN_STUDENTS.length} enrolled students</p>
         </div>
-        <button className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 transition-colors">
+        <button 
+          onClick={() => setShowAddStudentModal(true)}
+          className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 transition-colors"
+        >
           + Add Student
         </button>
       </div>
@@ -172,7 +179,7 @@ export default function ManagerStudentsPage() {
             </thead>
             <tbody className="divide-y divide-gray-50">
               {filtered.map(s => (
-                <tr key={s.id} className={cn('hover:bg-gray-50 transition-colors', s.riskFlag === 'critical' && 'bg-red-50/30')}>
+                <tr key={s.id} onClick={() => router.push(`/manager/students/${s.id}`)} className={cn('hover:bg-gray-50 transition-colors cursor-pointer', s.riskFlag === 'critical' && 'bg-red-50/30')}>
                   <td className="px-4 py-3">
                     <p className="font-medium text-gray-800">{s.name}</p>
                     <p className="text-xs text-gray-400">{s.email}</p>
@@ -219,6 +226,10 @@ export default function ManagerStudentsPage() {
           </div>
         )}
       </div>
+
+      {showAddStudentModal && (
+        <AddStudentModal onClose={() => setShowAddStudentModal(false)} />
+      )}
     </div>
   )
 }

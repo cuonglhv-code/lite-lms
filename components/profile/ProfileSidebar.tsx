@@ -2,7 +2,7 @@
 
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import {
   Camera, Share2, Lock, Pencil, Check, X,
   Globe, EyeOff, Target, Calendar,
@@ -16,8 +16,19 @@ interface Props {
 const LANGUAGES = ['Vietnamese', 'English', 'Japanese', 'Korean', 'French', 'German']
 
 export default function ProfileSidebar({ user }: Props) {
-  // Visibility toggle
   const [isPublic, setIsPublic] = useState(user.isPublic)
+  const fileInputRef = useRef<HTMLInputElement>(null)
+  const [toastMsg, setToastMsg] = useState('')
+
+  function showToast(msg: string) {
+    setToastMsg(msg)
+    setTimeout(() => setToastMsg(''), 3000)
+  }
+
+  function handleVisibilityToggle() {
+    setIsPublic(v => !v)
+    showToast(`Profile is now ${!isPublic ? 'public' : 'private'}`)
+  }
 
   // Copy-to-clipboard toast
   const [copied, setCopied] = useState(false)
@@ -41,6 +52,7 @@ export default function ProfileSidebar({ user }: Props) {
   function saveDetails() {
     setSavedDetails(details)
     setEditingDetails(false)
+    showToast('Personal details updated')
   }
   function cancelDetails() {
     setDetails(savedDetails)
@@ -55,15 +67,31 @@ export default function ProfileSidebar({ user }: Props) {
   function saveGoal() {
     setSavedGoal(goal)
     setEditingGoal(false)
+    showToast('IELTS goal updated')
+  }
+
+  const handleAvatarClick = () => fileInputRef.current?.click()
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files.length > 0) {
+      showToast('Avatar updated successfully')
+    }
   }
 
   return (
-    <aside className="flex flex-col gap-4">
+    <aside className="flex flex-col gap-4 relative">
+      {toastMsg && (
+        <div className="fixed bottom-4 right-4 bg-gray-900 border border-gray-700 shadow-xl px-4 py-3 rounded-lg flex items-center gap-2 z-50 text-white animate-in slide-in-from-bottom-5 text-sm font-medium">
+          <Check className="w-5 h-5 text-green-400" />
+          {toastMsg}
+        </div>
+      )}
 
       {/* ── Avatar card ── */}
       <div className="bg-white rounded-2xl border border-gray-200 p-5 flex flex-col items-center gap-3">
         {/* Avatar with photo-change overlay */}
-        <div className="relative group cursor-pointer">
+        <div className="relative group cursor-pointer" onClick={handleAvatarClick}>
+          <input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={handleFileChange} />
           <div className="w-24 h-24 rounded-full bg-indigo-600 flex items-center justify-center text-white text-3xl font-bold select-none">
             {user.avatarInitial}
           </div>
@@ -94,7 +122,7 @@ export default function ProfileSidebar({ user }: Props) {
         <div className="flex items-center gap-2 bg-gray-50 rounded-xl px-3 py-2 w-full justify-between">
           <span className="text-sm text-gray-600 font-medium">Profile visibility</span>
           <button
-            onClick={() => setIsPublic(v => !v)}
+            onClick={handleVisibilityToggle}
             aria-pressed={isPublic}
             aria-label={`Profile is ${isPublic ? 'public' : 'private'}, click to toggle`}
             className={`flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full transition-all

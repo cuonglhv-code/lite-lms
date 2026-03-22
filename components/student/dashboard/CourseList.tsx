@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { ChevronLeft, ChevronRight, BookOpen } from 'lucide-react'
 import CourseCard from './CourseCard'
+import Link from 'next/link'
 import type { CourseSummary } from '@/lib/types'
 
 const PAGE_SIZE = 3
@@ -37,9 +38,9 @@ export default function CourseList({ courses }: Props) {
           My Courses
           <span className="ml-2 text-sm font-normal text-gray-400">({courses.length})</span>
         </h2>
-        <a href="/student" className="text-xs font-medium text-indigo-600 hover:text-indigo-800 transition-colors">
+        <Link href="/student/courses" className="text-xs font-medium text-indigo-600 hover:text-indigo-800 transition-colors">
           View all →
-        </a>
+        </Link>
       </div>
 
       {/* Cards */}

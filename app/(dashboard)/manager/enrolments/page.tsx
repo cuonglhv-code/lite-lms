@@ -1,6 +1,11 @@
+'use client'
+
+import { useState } from 'react'
 import { cn } from '@/lib/utils'
 import { UserPlus } from 'lucide-react'
-import { ADMIN_STUDENTS, type PaymentStatus } from '@/lib/admin-data'
+import { ADMIN_STUDENTS, type PaymentStatus, type AdminStudent } from '@/lib/admin-data'
+import { EnrolStudentModal } from '@/components/modals/EnrolStudentModal'
+import { ManageEnrolmentModal } from '@/components/modals/ManageEnrolmentModal'
 
 function StatusBadge({ status }: { status: PaymentStatus }) {
   const map: Record<PaymentStatus, string> = {
@@ -17,6 +22,8 @@ function StatusBadge({ status }: { status: PaymentStatus }) {
 }
 
 export default function ManagerEnrolmentsPage() {
+  const [showEnrolModal, setShowEnrolModal] = useState(false)
+  const [managingStudent, setManagingStudent] = useState<AdminStudent | null>(null)
   const pending = ADMIN_STUDENTS.filter(s => s.paymentStatus === 'pending').length
 
   return (
@@ -27,7 +34,10 @@ export default function ManagerEnrolmentsPage() {
           <h1 className="text-xl font-bold text-gray-900">Enrolments</h1>
           <p className="text-sm text-gray-500 mt-0.5">{ADMIN_STUDENTS.length} enrolled students · {pending} pending payment</p>
         </div>
-        <button className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 transition-colors">
+        <button 
+          onClick={() => setShowEnrolModal(true)}
+          className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 transition-colors"
+        >
           <UserPlus className="w-4 h-4" />
           Enrol Student
         </button>
@@ -58,7 +68,7 @@ export default function ManagerEnrolmentsPage() {
                   <td className="px-4 py-3 text-xs text-gray-500">{s.examDate ?? '—'}</td>
                   <td className="px-4 py-3 text-center"><StatusBadge status={s.paymentStatus} /></td>
                   <td className="px-4 py-3 text-right">
-                    <button className="text-xs text-indigo-600 hover:text-indigo-800 font-medium">Manage</button>
+                    <button onClick={() => setManagingStudent(s)} className="text-xs text-indigo-600 hover:text-indigo-800 font-medium">Manage</button>
                   </td>
                 </tr>
               ))}
@@ -66,6 +76,13 @@ export default function ManagerEnrolmentsPage() {
           </table>
         </div>
       </div>
+
+      {showEnrolModal && (
+        <EnrolStudentModal onClose={() => setShowEnrolModal(false)} />
+      )}
+      {managingStudent && (
+        <ManageEnrolmentModal student={managingStudent} onClose={() => setManagingStudent(null)} />
+      )}
     </div>
   )
 }

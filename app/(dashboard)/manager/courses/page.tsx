@@ -1,5 +1,11 @@
+'use client'
+
+import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { cn } from '@/lib/utils'
 import { BookOpen, Users, TrendingUp } from 'lucide-react'
+import { CreateCourseModal } from '@/components/modals/CreateCourseModal'
+import { EditCourseModal } from '@/components/modals/EditCourseModal'
 import {
   ADMIN_COURSES,
   type AdminCourse,
@@ -25,7 +31,7 @@ function formatVND(n: number) {
   return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND', maximumFractionDigits: 0 }).format(n)
 }
 
-function CourseCard({ course: c }: { course: AdminCourse }) {
+function CourseCard({ course: c, onEdit, onViewClasses }: { course: AdminCourse, onEdit: (c: AdminCourse) => void, onViewClasses: (c: AdminCourse) => void }) {
   return (
     <div className={cn(
       'bg-white rounded-xl border border-gray-200 p-5 hover:shadow-md transition-shadow',
@@ -75,10 +81,10 @@ function CourseCard({ course: c }: { course: AdminCourse }) {
 
       {/* Actions */}
       <div className="flex gap-2 mt-3">
-        <button className="flex-1 py-1.5 text-xs font-medium text-indigo-600 border border-indigo-200 rounded-lg hover:bg-indigo-50 transition-colors">
+        <button onClick={() => onEdit(c)} className="flex-1 py-1.5 text-xs font-medium text-indigo-600 border border-indigo-200 rounded-lg hover:bg-indigo-50 transition-colors">
           Edit
         </button>
-        <button className="flex-1 py-1.5 text-xs font-medium text-gray-600 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
+        <button onClick={() => onViewClasses(c)} className="flex-1 py-1.5 text-xs font-medium text-gray-600 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
           View Classes
         </button>
       </div>
@@ -89,6 +95,10 @@ function CourseCard({ course: c }: { course: AdminCourse }) {
 // ── Page ───────────────────────────────────────────────────────
 
 export default function ManagerCoursesPage() {
+  const router = useRouter()
+  const [showCreate, setShowCreate] = useState(false)
+  const [editingCourse, setEditingCourse] = useState<AdminCourse | null>(null)
+
   const active   = ADMIN_COURSES.filter(c => c.status === 'active')
   const draft    = ADMIN_COURSES.filter(c => c.status === 'draft')
   const totalStudents = ADMIN_COURSES.reduce((s, c) => s + c.studentsEnrolled, 0)
@@ -103,7 +113,7 @@ export default function ManagerCoursesPage() {
           <h1 className="text-xl font-bold text-gray-900">Courses</h1>
           <p className="text-sm text-gray-500 mt-0.5">{ADMIN_COURSES.length} courses in catalogue</p>
         </div>
-        <button className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 transition-colors">
+        <button onClick={() => setShowCreate(true)} className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 transition-colors">
           + New Course
         </button>
       </div>
@@ -127,7 +137,7 @@ export default function ManagerCoursesPage() {
       <div>
         <h2 className="text-sm font-semibold text-gray-700 mb-3">Active Courses</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
-          {active.map(c => <CourseCard key={c.id} course={c} />)}
+          {active.map(c => <CourseCard key={c.id} course={c} onEdit={setEditingCourse} onViewClasses={(course) => router.push(`/manager/classes?course=${course.id}`)} />)}
         </div>
       </div>
 
@@ -136,7 +146,7 @@ export default function ManagerCoursesPage() {
         <div>
           <h2 className="text-sm font-semibold text-gray-400 mb-3">Draft / Upcoming</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
-            {draft.map(c => <CourseCard key={c.id} course={c} />)}
+            {draft.map(c => <CourseCard key={c.id} course={c} onEdit={setEditingCourse} onViewClasses={(course) => router.push(`/manager/classes?course=${course.id}`)} />)}
           </div>
         </div>
       )}
@@ -182,6 +192,9 @@ export default function ManagerCoursesPage() {
           </table>
         </div>
       </div>
+
+      {showCreate && <CreateCourseModal onClose={() => setShowCreate(false)} />}
+      {editingCourse && <EditCourseModal course={editingCourse} onClose={() => setEditingCourse(null)} />}
     </div>
   )
 }

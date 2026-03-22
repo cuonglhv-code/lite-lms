@@ -98,9 +98,9 @@ export const SKILL_SCORES: SkillScore[] = [
 ]
 
 export const ENROLLED_COURSES: EnrolledCourse[] = [
-  { id: 'c1', name: 'IELTS Writing Task 2 – Band 7 Strategy',    percentComplete: 22, eta: 'May 10, 2026' },
-  { id: 'c2', name: 'IELTS Academic Reading – Speed & Accuracy', percentComplete: 45, eta: 'Apr 20, 2026' },
-  { id: 'c3', name: 'IELTS Listening – Sections 3 & 4',          percentComplete: 8,  eta: 'Jun 1, 2026' },
+  { id: '20000000-0000-0000-0000-000000000001', name: 'IELTS Writing Task 2 – Band 7 Strategy',    percentComplete: 22, eta: 'May 10, 2026' },
+  { id: '30000000-0000-0000-0000-000000000001', name: 'IELTS Academic Reading – Speed & Accuracy', percentComplete: 45, eta: 'Apr 20, 2026' },
+  { id: '40000000-0000-0000-0000-000000000001', name: 'IELTS Listening – Sections 3 & 4',          percentComplete: 8,  eta: 'Jun 1, 2026' },
 ]
 
 // ── Accomplishments ───────────────────────────────────────────

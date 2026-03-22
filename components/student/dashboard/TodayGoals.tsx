@@ -1,3 +1,6 @@
+'use client'
+
+import { useState } from 'react'
 import Link from 'next/link'
 import { Star, CheckCircle2, ArrowRight } from 'lucide-react'
 import type { DailyGoal } from '@/lib/dashboard-data'
@@ -7,6 +10,16 @@ interface Props {
 }
 
 export default function TodayGoals({ goals }: Props) {
+  const [starred, setStarred] = useState<Set<string>>(new Set())
+
+  const toggleStar = (id: string) => {
+    setStarred(prev => {
+      const next = new Set(prev)
+      if (next.has(id)) next.delete(id)
+      else next.add(id)
+      return next
+    })
+  }
   return (
     <section className="bg-white rounded-2xl border border-gray-200 p-5">
       <h2 className="text-base font-semibold text-gray-900 mb-4">Today&apos;s goals</h2>
@@ -19,7 +32,9 @@ export default function TodayGoals({ goals }: Props) {
               <div className="flex items-center gap-3 group">
                 {done
                   ? <CheckCircle2 className="w-5 h-5 text-green-500 shrink-0" />
-                  : <Star className="w-5 h-5 text-indigo-300 group-hover:text-indigo-500 transition-colors shrink-0" />
+                  : <button onClick={() => toggleStar(goal.id)} aria-label="Toggle star">
+                      <Star className={`w-5 h-5 transition-colors shrink-0 ${starred.has(goal.id) ? 'fill-indigo-500 text-indigo-500' : 'text-indigo-300 hover:text-indigo-500'}`} />
+                    </button>
                 }
 
                 <span className={`text-sm flex-1 ${done ? 'text-gray-400 line-through' : 'text-gray-700'}`}>

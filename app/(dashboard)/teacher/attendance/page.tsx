@@ -1,16 +1,20 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, Suspense } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { cn } from '@/lib/utils'
 import { TEACHER_CLASSES, getClassStudents } from '@/lib/teacher-data'
 import type { AttStatus } from '@/lib/teacher-data'
 
 type StudentStatus = Record<string, AttStatus>
 
-export default function TakeAttendancePage() {
-  const [classId,   setClassId]   = useState(TEACHER_CLASSES[0]?.id ?? '')
+function TakeAttendanceContent() {
+  const searchParams = useSearchParams()
+  const classIdParam = searchParams.get('classId')
+
+  const [classId,   setClassId]   = useState(classIdParam || TEACHER_CLASSES[0]?.id || '')
   const [statuses,  setStatuses]  = useState<StudentStatus>(() =>
-    Object.fromEntries(getClassStudents(TEACHER_CLASSES[0]?.id ?? '').map(s => [s.id, 'present' as AttStatus]))
+    Object.fromEntries(getClassStudents(classIdParam || TEACHER_CLASSES[0]?.id || '').map(s => [s.id, 'present' as AttStatus]))
   )
   const [topic,     setTopic]     = useState('')
   const [note,      setNote]      = useState('')
@@ -201,5 +205,13 @@ export default function TakeAttendancePage() {
         Submit Attendance
       </button>
     </div>
+  )
+}
+
+export default function TakeAttendancePage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <TakeAttendanceContent />
+    </Suspense>
   )
 }

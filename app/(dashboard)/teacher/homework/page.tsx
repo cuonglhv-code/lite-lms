@@ -1,6 +1,7 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, Suspense, useEffect } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { cn } from '@/lib/utils'
 import { Search, BookMarked } from 'lucide-react'
 import { TEACHER_HW_TASKS, TEACHER_SUBMISSIONS } from '@/lib/teacher-data'
@@ -24,12 +25,55 @@ function SubBadge({ status }: { status: string }) {
   return <span className="text-red-500 font-medium text-xs">✗ Not submitted</span>
 }
 
-export default function HomeworkHubPage() {
-  const [tab,         setTab]         = useState<TabKey>('active')
+function HomeworkContent() {
+  const searchParams = useSearchParams()
+  const taskIdParam = searchParams.get('taskId')
+  const tabParam = searchParams.get('tab') as TabKey | null
+
+  const [tab,         setTab]         = useState<TabKey>(tabParam ?? 'active')
   const [search,      setSearch]      = useState('')
   const [showModal,   setShowModal]   = useState(false)
-  const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null)
+  const [selectedTaskId, setSelectedTaskId] = useState<string | null>(taskIdParam)
   const [gradingData, setGradingData] = useState<Record<string, { score: number | null; feedback: string }>>({})
+  const [flagged, setFlagged] = useState<Set<string>>(new Set())
+  const [saveSuccess, setSaveSuccess] = useState<{ id: string, msg: string } | null>(null)
+  const [assignSuccess, setAssignSuccess] = useState('')
+
+  // modal state
+  const [taskName, setTaskName] = useState('')
+  const [dueDate, setDueDate] = useState('')
+  const [modalClass, setModalClass] = useState('Foundation 1 – Class A')
+  const [modalErr, setModalErr] = useState('')
+
+  useEffect(() => {
+    if (taskIdParam && tabParam) {
+      setTab(tabParam)
+      setSelectedTaskId(taskIdParam)
+    }
+  }, [taskIdParam, tabParam])
+
+  const toggleFlag = (studentId: string) => {
+    setFlagged(prev => {
+      const next = new Set(prev)
+      if (next.has(studentId)) {
+        next.delete(studentId)
+      } else {
+        next.add(studentId)
+      }
+      return next
+    })
+  }
+
+  const handleAssign = () => {
+    if (!taskName.trim()) { setModalErr('Task name is required'); return }
+    if (!dueDate) { setModalErr('Due date is required'); return }
+    setModalErr('')
+    setShowModal(false)
+    setTaskName('')
+    setDueDate('')
+    setAssignSuccess(`✓ Homework assigned to ${modalClass}`)
+    setTimeout(() => setAssignSuccess(''), 3000)
+  }
 
   const activeTasks   = TEACHER_HW_TASKS.filter(t => t.status !== 'closed')
   const archivedTasks = TEACHER_HW_TASKS.filter(t => t.status === 'closed')
@@ -50,10 +94,13 @@ export default function HomeworkHubPage() {
           <h1 className="text-xl font-bold text-gray-900">Homework</h1>
           <p className="text-sm text-gray-500 mt-0.5">{TEACHER_HW_TASKS.length} tasks across all classes</p>
         </div>
-        <button onClick={() => setShowModal(true)}
-          className="px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 transition-colors">
-          + Assign Homework
-        </button>
+        <div className="flex items-center gap-4">
+          {assignSuccess && <span className="text-sm font-medium text-green-600 bg-green-50 px-3 py-1.5 rounded-lg">{assignSuccess}</span>}
+          <button onClick={() => setShowModal(true)}
+            className="px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 transition-colors">
+            + Assign Homework
+          </button>
+        </div>
       </div>
 
       {/* Summary strip */}
@@ -151,27 +198,11 @@ export default function HomeworkHubPage() {
                 : gradingTasks
               return tasksToShow.map(task => {
                 const subs = TEACHER_SUBMISSIONS.filter(s => s.taskId === task.id)
-                const handleSaveAll = async () => {
-                  try {
-                    const updates = subs.map(async (sub) => {
-                      const score = gradingData[sub.id]?.score ?? sub.score
-                      const feedback = gradingData[sub.id]?.feedback ?? sub.feedback
-                      if (score === null) return
-
-                      const res = await fetch(`/api/submissions/${sub.id}/grade`, {
-                        method: 'PATCH',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ score, feedback, status: 'returned' })
-                      })
-                      return res.json()
-                    })
-                    await Promise.all(updates)
-                    alert('Grades saved ✓')
-                    setGradingData({})
-                  } catch (error) {
-                    console.error('Save grades error:', error)
-                    alert('Failed to save grades')
-                  }
+                const handleSaveAll = () => {
+                  console.log('Grades Object:', gradingData)
+                  const studentCount = Object.keys(gradingData).length
+                  setSaveSuccess({ id: task.id, msg: `✓ Grades saved for ${studentCount || 0} students.` })
+                  setTimeout(() => setSaveSuccess(null), 3000)
                 }
 
                 return (
@@ -181,9 +212,12 @@ export default function HomeworkHubPage() {
                         <p className="font-semibold text-gray-900">{task.name}</p>
                         <p className="text-xs text-gray-400">{task.classCode} · Due {task.dueDate} · {task.submittedCount}/{task.totalStudents} submitted</p>
                       </div>
-                      <button onClick={handleSaveAll} className="text-xs bg-indigo-600 text-white px-3 py-1.5 rounded-lg hover:bg-indigo-700 transition-colors font-medium">
-                        Save All
-                      </button>
+                      <div className="flex items-center gap-3">
+                        {saveSuccess?.id === task.id && <span className="text-sm text-green-600 font-medium">{saveSuccess.msg}</span>}
+                        <button onClick={handleSaveAll} className="text-xs bg-indigo-600 text-white px-3 py-1.5 rounded-lg hover:bg-indigo-700 transition-colors font-medium">
+                          Save All
+                        </button>
+                      </div>
                     </div>
                 <table className="w-full text-sm">
                   <thead className="border-b border-gray-50">
@@ -226,7 +260,7 @@ export default function HomeworkHubPage() {
                           )}
                         </td>
                         <td className="px-4 py-2.5 text-center">
-                          <button className={cn('text-sm', sub.flagged ? 'text-amber-500' : 'text-gray-300 hover:text-amber-400')}>🚩</button>
+                          <button onClick={() => toggleFlag(sub.id)} className={cn('text-lg w-8 h-8 rounded-full hover:bg-gray-100 transition-colors', flagged.has(sub.id) ? 'text-red-500' : 'text-gray-300 hover:text-red-400')}>🚩</button>
                         </td>
                       </tr>
                     ))}
@@ -283,7 +317,7 @@ export default function HomeworkHubPage() {
               ].map(() => (
                 <div key="class">
                   <label className="block text-xs font-semibold text-gray-500 mb-1">Class *</label>
-                  <select className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-indigo-400">
+                  <select value={modalClass} onChange={e => setModalClass(e.target.value)} className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-indigo-400">
                     <option>Foundation 1 – Class A</option>
                     <option>IELTS Writing – Band 6</option>
                   </select>
@@ -292,7 +326,9 @@ export default function HomeworkHubPage() {
               <div>
                 <label className="block text-xs font-semibold text-gray-500 mb-1">Task Name *</label>
                 <input type="text" placeholder="e.g. Writing Task 2 – Argument Essay" maxLength={80}
+                  value={taskName} onChange={e => { setTaskName(e.target.value); setModalErr('') }}
                   className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-indigo-400" />
+                {modalErr === 'Task name is required' && <p className="text-xs text-red-500 mt-1">{modalErr}</p>}
               </div>
               <div>
                 <label className="block text-xs font-semibold text-gray-500 mb-1.5">Type *</label>
@@ -306,7 +342,8 @@ export default function HomeworkHubPage() {
               </div>
               <div>
                 <label className="block text-xs font-semibold text-gray-500 mb-1">Due Date *</label>
-                <input type="date" className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-indigo-400" />
+                <input type="date" value={dueDate} onChange={e => { setDueDate(e.target.value); setModalErr('') }} className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-indigo-400" />
+                {modalErr === 'Due date is required' && <p className="text-xs text-red-500 mt-1">{modalErr}</p>}
               </div>
               <div>
                 <label className="block text-xs font-semibold text-gray-500 mb-1">Description</label>
@@ -317,12 +354,20 @@ export default function HomeworkHubPage() {
             <div className="flex gap-2 pt-2">
               <button onClick={() => setShowModal(false)}
                 className="flex-1 py-2.5 text-sm border border-gray-200 rounded-lg text-gray-600 hover:bg-gray-50 transition-colors">Cancel</button>
-              <button onClick={() => setShowModal(false)}
+              <button onClick={handleAssign}
                 className="flex-1 py-2.5 text-sm bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors font-medium">Assign</button>
             </div>
           </div>
         </div>
       )}
     </div>
+  )
+}
+
+export default function HomeworkHubPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <HomeworkContent />
+    </Suspense>
   )
 }

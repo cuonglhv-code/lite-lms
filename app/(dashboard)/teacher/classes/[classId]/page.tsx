@@ -5,6 +5,8 @@ import Link from 'next/link'
 import { useParams } from 'next/navigation'
 import { cn } from '@/lib/utils'
 import { ClipboardCheck, BookMarked, BarChart2, Calendar, Users } from 'lucide-react'
+import { AssignHomeworkModal } from '@/components/modals/AssignHomeworkModal'
+import { AddSessionNoteModal } from '@/components/modals/AddSessionNoteModal'
 import {
   TEACHER_SESSIONS,
   TEACHER_HW_TASKS, TEACHER_ASSESSMENTS,
@@ -34,6 +36,9 @@ export default function ClassDetailPage() {
   const params    = useParams()
   const classId   = params.classId as string
   const [tab, setTab] = useState<Tab>('overview')
+  const [showAssignHW, setShowAssignHW] = useState(false)
+  const [showSessionNote, setShowSessionNote] = useState(false)
+  const [sessionSuccess, setSessionSuccess] = useState('')
 
   const cls       = getClassById(classId)
   const students  = getClassStudents(classId)
@@ -87,7 +92,7 @@ export default function ClassDetailPage() {
               className="flex items-center gap-1.5 px-3 py-2 text-xs font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 transition-colors">
               <ClipboardCheck className="w-3.5 h-3.5" />Take Attendance
             </Link>
-            <button className="flex items-center gap-1.5 px-3 py-2 text-xs font-medium text-gray-700 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
+            <button onClick={() => setShowAssignHW(true)} className="flex items-center gap-1.5 px-3 py-2 text-xs font-medium text-gray-700 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
               <BookMarked className="w-3.5 h-3.5" />Assign Homework
             </button>
             <Link href={`/teacher/assessments?classId=${classId}`}
@@ -141,7 +146,7 @@ export default function ClassDetailPage() {
                   <div className="flex items-center gap-2 text-xs text-gray-400">
                     {s.attendanceRecorded
                       ? <span className="text-green-600">✓ {s.presentCount}P · {s.lateCount}L · {s.absentCount}A</span>
-                      : <span className="text-amber-600">⚠ No attendance</span>}
+                      : <Link href={`/teacher/attendance?classId=${classId}&date=${s.date}`} className="text-amber-600 hover:underline">⚠ No attendance</Link>}
                   </div>
                 </div>
               ))}
@@ -235,7 +240,7 @@ export default function ClassDetailPage() {
                     <td className="px-4 py-3 text-center">
                       {s.attendanceRecorded
                         ? <span className="text-green-600 text-xs font-medium">✓ Done</span>
-                        : <span className="text-amber-500 text-xs font-medium">⚠ Missing</span>}
+                        : <Link href={`/teacher/attendance?classId=${classId}&date=${s.date}`} className="text-amber-500 hover:text-amber-600 hover:underline text-xs font-medium">⚠ Record</Link>}
                     </td>
                   </tr>
                 ))}
@@ -249,7 +254,7 @@ export default function ClassDetailPage() {
       {tab === 'homework' && (
         <div className="space-y-4">
           <div className="flex justify-end">
-            <button className="flex items-center gap-1.5 px-3 py-2 text-xs font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 transition-colors">
+            <button onClick={() => setShowAssignHW(true)} className="flex items-center gap-1.5 px-3 py-2 text-xs font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 transition-colors">
               + Assign Homework
             </button>
           </div>
@@ -345,8 +350,11 @@ export default function ClassDetailPage() {
       {/* ── Sessions tab ── */}
       {tab === 'sessions' && (
         <div className="space-y-4">
-          <div className="flex justify-end">
-            <button className="px-3 py-2 text-xs font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 transition-colors">
+          <div className="flex justify-between items-center">
+            <div>
+              {sessionSuccess && <span className="text-sm font-medium text-green-600 bg-green-50 px-3 py-1.5 rounded-lg">{sessionSuccess}</span>}
+            </div>
+            <button onClick={() => setShowSessionNote(true)} className="px-3 py-2 text-xs font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 transition-colors">
               + Add Session Note
             </button>
           </div>
@@ -359,7 +367,7 @@ export default function ClassDetailPage() {
                       <span className="font-semibold text-gray-800">{s.date} · {s.startTime}–{s.endTime}</span>
                       {s.attendanceRecorded
                         ? <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded font-medium">Attendance ✓</span>
-                        : <span className="text-xs bg-amber-100 text-amber-700 px-2 py-0.5 rounded font-medium">No attendance</span>}
+                        : <Link href={`/teacher/attendance?classId=${classId}&date=${s.date}`} className="text-xs bg-amber-100 text-amber-700 px-2 py-0.5 rounded font-medium hover:bg-amber-200">⚠ No attendance</Link>}
                     </div>
                     {s.topicCovered ? (
                       <>
@@ -386,6 +394,8 @@ export default function ClassDetailPage() {
         </div>
       )}
 
+      {showAssignHW && <AssignHomeworkModal classId={classId} onClose={() => setShowAssignHW(false)} />}
+      {tab === 'sessions' && showSessionNote && <AddSessionNoteModal classId={classId} sessions={sessions} onSuccess={(msg: string) => { setSessionSuccess(msg); setTimeout(() => setSessionSuccess(''), 3000) }} onClose={() => setShowSessionNote(false)} />}
     </div>
   )
 }

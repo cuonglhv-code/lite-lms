@@ -19,9 +19,9 @@ export interface WeekDay {
 }
 
 export const DAILY_GOALS: DailyGoal[] = [
-  { id: 'items',   label: 'Complete any 3 learning items', current: 0, target: 3, href: '/student' },
-  { id: 'writing', label: 'Complete 1 writing task',       current: 0, target: 1, href: '/student' },
-  { id: 'videos',  label: 'Watch 2 videos',                current: 0, target: 2, href: '/student' },
+  { id: 'items',   label: 'Complete any 3 learning items', current: 0, target: 3, href: '/student/courses' },
+  { id: 'writing', label: 'Complete 1 writing task',       current: 0, target: 1, href: '/student/class/20000000-0000-0000-0000-000000000001' },
+  { id: 'videos',  label: 'Watch 2 videos',                current: 0, target: 2, href: '/student/catalog' },
 ]
 
 // isToday is annotated at render time in the page based on new Date().getDay()
