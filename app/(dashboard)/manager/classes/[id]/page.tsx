@@ -18,6 +18,52 @@ import { getClassDetails } from '../../actions'
 
 type Tab = 'overview' | 'students' | 'assessments' | 'attendance' | 'sessions'
 
+interface Student {
+  id: string
+  name: string
+  email: string
+}
+
+interface Enrolment {
+  student: Student
+  target_exam_date: string | Date | null
+}
+
+interface Assessment {
+  id: string
+  assessment_date: string | Date
+  assessment_type: string | null
+  assessment_name: string | null
+  score: number | string | null
+}
+
+interface AttendanceRecord {
+  id: string
+  session_date: string | Date
+  status: string
+  student: { name: string }
+}
+
+interface Homework {
+  id: string
+  status: string
+}
+
+interface ClassData {
+  id: string
+  class_name: string
+  class_code: string
+  status: string
+  capacity: number
+  schedule: string
+  course: { name: string }
+  teacher: { name: string } | null
+  enrolments: Enrolment[]
+  assessments: Assessment[]
+  attendance: AttendanceRecord[]
+  homework: Homework[]
+}
+
 export default function ClassDetailsPage() {
   const router = useRouter()
   const params = useParams()
@@ -25,14 +71,14 @@ export default function ClassDetailsPage() {
   
   const [activeTab, setActiveTab] = useState<Tab>('overview')
   const [loading, setLoading] = useState(true)
-  const [classData, setClassData] = useState<any>(null)
+  const [classData, setClassData] = useState<ClassData | null>(null)
 
   useEffect(() => {
     async function loadData() {
       setLoading(true)
       const res = await getClassDetails(id)
-      if (res.success) {
-        setClassData(res.data)
+      if (res.success && res.data) {
+        setClassData(res.data as unknown as ClassData)
       } else {
         console.error(res.error)
       }
@@ -71,23 +117,23 @@ export default function ClassDetailsPage() {
   // Calculations
   const enrolledCount = enrolments?.length || 0
   const avgBand = assessments?.length 
-    ? (assessments.reduce((sum: number, a: any) => sum + Number(a.score || 0), 0) / assessments.length).toFixed(1)
+    ? (assessments.reduce((sum: number, a: Assessment) => sum + Number(a.score || 0), 0) / assessments.length).toFixed(1)
     : 'N/A'
   
   const hwTotal = homework?.length || 0
-  const hwSubmitted = homework?.filter((h: any) => h.status === 'Submitted' || h.status === 'Graded').length || 0
+  const hwSubmitted = homework?.filter((h: Homework) => h.status === 'Submitted' || h.status === 'Graded').length || 0
   const hwPct = hwTotal ? Math.round((hwSubmitted / hwTotal) * 100) : 0
 
   const attTotal = attendance?.length || 0
-  const attPresent = attendance?.filter((a: any) => a.status === 'Present').length || 0
+  const attPresent = attendance?.filter((a: AttendanceRecord) => a.status === 'Present').length || 0
   const attPct = attTotal ? Math.round((attPresent / attTotal) * 100) : 0
 
-  const examDates = enrolments?.map((e: any) => e.target_exam_date).filter(Boolean)
+  const examDates = enrolments?.map((e: Enrolment) => e.target_exam_date).filter(Boolean) as (string | Date)[]
   const nextExamDate = examDates?.length 
-    ? new Date(Math.min(...examDates.map((d: any) => new Date(d).getTime()))).toLocaleDateString()
+    ? new Date(Math.min(...examDates.map((d: string | Date) => new Date(d).getTime()))).toLocaleDateString()
     : 'No exams scheduled'
 
-  const sessions = Array.from(new Set(attendance?.map((a: any) => a.session_date))).sort((a: any, b: any) => new Date(b).getTime() - new Date(a).getTime())
+  const sessions = Array.from(new Set(attendance?.map((a: AttendanceRecord) => a.session_date.toString()))).sort((a: string, b: string) => new Date(b).getTime() - new Date(a).getTime())
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto">
@@ -206,7 +252,7 @@ export default function ClassDetailsPage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-50">
-                  {enrolments.map((en: any) => (
+                  {enrolments.map((en: Enrolment) => (
                     <tr 
                       key={en.student.id} 
                       className="hover:bg-gray-50/50 transition-colors cursor-pointer"
@@ -239,7 +285,7 @@ export default function ClassDetailsPage() {
 
         {activeTab === 'assessments' && (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {assessments.map((ass: any) => (
+            {assessments.map((ass: Assessment) => (
               <div key={ass.id} className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm">
                 <div className="flex justify-between items-start mb-4">
                   <div className="w-10 h-10 bg-indigo-50 rounded-xl flex items-center justify-center">
@@ -278,10 +324,10 @@ export default function ClassDetailsPage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-50">
-                  {sessions.map((date: any) => {
-                    const sessionRecords = attendance.filter((a: any) => a.session_date === date)
-                    const present = sessionRecords.filter((a: any) => a.status === 'Present').length
-                    const absentees = sessionRecords.filter((a: any) => a.status === 'Absent').map((a: any) => a.student.name)
+                  {sessions.map((date: string) => {
+                    const sessionRecords = attendance.filter((a: AttendanceRecord) => a.session_date.toString() === date)
+                    const present = sessionRecords.filter((a: AttendanceRecord) => a.status === 'Present').length
+                    const absentees = sessionRecords.filter((a: AttendanceRecord) => a.status === 'Absent').map((a: AttendanceRecord) => a.student.name)
                     return (
                       <tr key={date} className="hover:bg-gray-50/50 transition-colors">
                         <td className="px-6 py-4 font-bold text-gray-800">{new Date(date).toLocaleDateString()}</td>
@@ -308,7 +354,7 @@ export default function ClassDetailsPage() {
 
         {activeTab === 'sessions' && (
           <div className="space-y-4">
-            {sessions.map((date: any) => (
+            {sessions.map((date: string) => (
               <div key={date} className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm flex items-center justify-between">
                 <div className="flex items-center gap-4">
                   <div className="w-12 h-12 bg-gray-50 rounded-2xl flex flex-col items-center justify-center text-gray-400">
@@ -335,7 +381,7 @@ export default function ClassDetailsPage() {
   )
 }
 
-function InfoRow({ icon: Icon, label, value }: { icon: any, label: string, value: string }) {
+function InfoRow({ icon: Icon, label, value }: { icon: React.ElementType, label: string, value: string }) {
   return (
     <div className="flex items-start gap-4">
       <div className="w-8 h-8 rounded-lg bg-gray-50 flex items-center justify-center mt-0.5">

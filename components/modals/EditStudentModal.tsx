@@ -21,7 +21,7 @@ export function EditStudentModal({
 }: { 
   student: Student
   onClose: () => void 
-  onSuccess: (updated: any) => void
+  onSuccess: (updated: Partial<Student>) => void
 }) {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -41,7 +41,7 @@ export function EditStudentModal({
     const res = await updateStudent(student.id, data)
     
     if (res.success) {
-      onSuccess(res.data)
+      onSuccess(res.data as unknown as Partial<Student>)
       onClose()
     } else {
       setError(res.error || "Failed to update student")

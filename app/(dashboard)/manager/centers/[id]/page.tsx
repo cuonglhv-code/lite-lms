@@ -12,7 +12,6 @@ import {
   GraduationCap, 
   School, 
   BadgeDollarSign,
-  TrendingUp,
   Settings,
   Pencil
 } from 'lucide-react'
@@ -22,6 +21,50 @@ import { EditCenterModal } from '@/components/modals/EditCenterModal'
 
 type Tab = 'overview' | 'teachers' | 'students' | 'classes' | 'finance'
 
+interface Teacher {
+  id: string
+  name: string | null
+  email: string
+}
+
+interface Student {
+  id: string
+  name: string
+  student_code: string
+  email?: string | null
+}
+
+interface Class {
+  id: string
+  class_name: string
+  class_code: string
+  status: string
+  capacity: number
+  schedule: string
+  teacher: { name: string | null } | null
+}
+
+interface Finance {
+  id: string
+  type: string
+  description: string | null
+  date: string | Date
+  amount: number
+}
+
+interface CenterData {
+  id: string
+  name: string
+  address: string | null
+  phone: string | null
+  email: string | null
+  isActive: boolean
+  teachers: Teacher[]
+  students: Student[]
+  classes: Class[]
+  finances: Finance[]
+}
+
 export default function CenterDetailsPage() {
   const router = useRouter()
   const params = useParams()
@@ -29,15 +72,15 @@ export default function CenterDetailsPage() {
   
   const [activeTab, setActiveTab] = useState<Tab>('overview')
   const [loading, setLoading] = useState(true)
-  const [center, setCenter] = useState<any>(null)
+  const [center, setCenter] = useState<CenterData | null>(null)
   const [showEditModal, setShowEditModal] = useState(false)
 
   useEffect(() => {
     async function loadData() {
       setLoading(true)
       const res = await getCenterDetails(id)
-      if (res.success) {
-        setCenter(res.data)
+      if (res.success && res.data) {
+        setCenter(res.data as unknown as CenterData)
       } else {
         console.error(res.error)
       }
@@ -73,7 +116,7 @@ export default function CenterDetailsPage() {
 
   const teachersCount = teachers?.length || 0
   const studentsCount = students?.length || 0
-  const activeClasses = classes?.filter((c: any) => c.status !== 'Completed').length || 0
+  const activeClasses = classes?.filter((c: Class) => c.status !== 'Completed').length || 0
   
   const collectionRate = 88 // Mock calculation
 
@@ -145,9 +188,9 @@ export default function CenterDetailsPage() {
                <div className="lg:col-span-2 bg-white rounded-3xl border border-gray-100 shadow-sm p-8 space-y-8">
                   <h3 className="font-bold text-lg text-gray-900">Center Information</h3>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
-                     <CenterInfoItem icon={MapPin} label="Full Address" value={address} />
-                     <CenterInfoItem icon={Phone} label="Office Phone" value={phone} />
-                     <CenterInfoItem icon={Mail} label="Contact Email" value={email} />
+                     <CenterInfoItem icon={MapPin} label="Full Address" value={address || ''} />
+                     <CenterInfoItem icon={Phone} label="Office Phone" value={phone || ''} />
+                     <CenterInfoItem icon={Mail} label="Contact Email" value={email || ''} />
                      <CenterInfoItem icon={ShieldCheck} label="Operational Status" value={isActive ? 'Fully Active' : 'Inactive'} />
                   </div>
                </div>
@@ -179,7 +222,7 @@ export default function CenterDetailsPage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-50">
-                   {teachers?.map((t: any) => (
+                   {teachers?.map((t: Teacher) => (
                      <tr key={t.id} className="hover:bg-gray-50/50 transition-colors">
                         <td className="px-8 py-4">
                            <p className="font-bold text-gray-800">{t.name}</p>
@@ -214,7 +257,7 @@ export default function CenterDetailsPage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-50">
-                   {students?.map((s: any) => (
+                   {students?.map((s: Student) => (
                      <tr key={s.id} onClick={() => router.push(`/manager/students/${s.id}`)} className="hover:bg-gray-50/50 transition-colors cursor-pointer">
                         <td className="px-8 py-4">
                            <p className="font-bold text-gray-800">{s.name}</p>
@@ -251,7 +294,7 @@ export default function CenterDetailsPage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-50">
-                   {classes?.map((c: any) => (
+                   {classes?.map((c: Class) => (
                      <tr key={c.id} onClick={() => router.push(`/manager/classes/${c.id}`)} className="hover:bg-gray-50/50 transition-colors cursor-pointer">
                         <td className="px-8 py-4">
                            <p className="font-bold text-gray-800">{c.class_name}</p>
@@ -280,11 +323,11 @@ export default function CenterDetailsPage() {
 
              <div className="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden min-h-[400px]">
                 <div className="px-8 py-5 border-b border-gray-50 flex justify-between items-center">
-                  <h3 className="font-bold text-gray-900">Recent Transactions</h3>
-                  <button className="text-xs font-bold text-indigo-600">View All</button>
+                   <h3 className="font-bold text-gray-900">Recent Transactions</h3>
+                   <button className="text-xs font-bold text-indigo-600">View All</button>
                 </div>
                 <div className="p-8 space-y-6">
-                   {finances?.slice(0, 5).map((f: any) => (
+                   {finances?.slice(0, 5).map((f: Finance) => (
                      <div key={f.id} className="flex items-center justify-between">
                        <div className="flex items-center gap-4">
                          <div className={cn(
@@ -311,7 +354,7 @@ export default function CenterDetailsPage() {
   )
 }
 
-function CenterStatCard({ label, value, icon: Icon, color }: { label: string, value: any, icon: any, color: string }) {
+function CenterStatCard({ label, value, icon: Icon, color }: { label: string, value: string | number, icon: React.ElementType, color: string }) {
   const bgMap: Record<string, string> = {
     indigo: 'bg-indigo-50 text-indigo-600 border-indigo-100',
     emerald: 'bg-emerald-50 text-emerald-600 border-emerald-100',
@@ -328,7 +371,7 @@ function CenterStatCard({ label, value, icon: Icon, color }: { label: string, va
   )
 }
 
-function CenterInfoItem({ icon: Icon, label, value }: { icon: any, label: string, value: string }) {
+function CenterInfoItem({ icon: Icon, label, value }: { icon: React.ElementType, label: string, value: string | null }) {
   return (
     <div className="flex items-start gap-4">
       <div className="w-10 h-10 rounded-xl bg-gray-50 flex items-center justify-center flex-shrink-0 mt-0.5 border border-gray-100">

@@ -17,10 +17,19 @@ function RiskBadge({ flag }: { flag: string }) {
 
 // ── Page ───────────────────────────────────────────────────────
 
+interface StudentListItem {
+  id: string
+  name: string
+  email: string | null
+  enrolments?: { class: { class_name: string } }[]
+  attendance?: { status: string }[]
+  assessments?: { score: number | string | null }[]
+}
+
 export default function ManagerStudentsPage() {
   const router = useRouter()
   const [loading, setLoading] = useState(true)
-  const [students, setStudents] = useState<any[]>([])
+  const [students, setStudents] = useState<StudentListItem[]>([])
   const [search, setSearch] = useState('')
   const [showAddStudentModal, setShowAddStudentModal] = useState(false)
 
@@ -28,7 +37,7 @@ export default function ManagerStudentsPage() {
     async function loadData() {
       const res = await getStudents()
       if (res.success) {
-        setStudents(res.data)
+        setStudents(res.data as unknown as StudentListItem[])
       }
       setLoading(false)
     }
@@ -88,13 +97,13 @@ export default function ManagerStudentsPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-50">
-              {filtered.map(s => {
+              {filtered.map((s: StudentListItem) => {
                 const enrolment = s.enrolments?.[0]
                 const attendancePct = s.attendance?.length 
-                  ? Math.round((s.attendance.filter((a: any) => a.status === 'Present').length / s.attendance.length) * 100)
+                  ? Math.round((s.attendance.filter((a: { status: string }) => a.status === 'Present').length / s.attendance.length) * 100)
                   : 0
                 const avgScore = s.assessments?.length
-                  ? (s.assessments.reduce((sum: number, a: any) => sum + Number(a.score || 0), 0) / s.assessments.length).toFixed(1)
+                  ? (s.assessments.reduce((sum: number, a: { score: number | string | null }) => sum + Number(a.score || 0), 0) / s.assessments.length).toFixed(1)
                   : 'N/A'
 
                 return (

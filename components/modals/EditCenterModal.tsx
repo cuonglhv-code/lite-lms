@@ -23,7 +23,7 @@ export function EditCenterModal({
 }: { 
   center: Center
   onClose: () => void 
-  onSuccess: (updated: any) => void
+  onSuccess: (updated: Partial<Center>) => void
 }) {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -45,7 +45,7 @@ export function EditCenterModal({
     const res = await updateCenter(center.id, data)
     
     if (res.success) {
-      onSuccess(res.data)
+      onSuccess(res.data as unknown as Partial<Center>)
       onClose()
     } else {
       setError(res.error || "Failed to update center")

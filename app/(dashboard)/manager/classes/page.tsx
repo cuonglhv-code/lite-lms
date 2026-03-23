@@ -25,34 +25,33 @@ function StatusBadge({ s }: { s: string }) {
   )
 }
 
-function MiniBar({ value, good, warn }: { value: number; good: number; warn: number }) {
-  const color = value >= good ? 'bg-green-500' : value >= warn ? 'bg-amber-400' : 'bg-red-500'
-  return (
-    <div className="flex items-center gap-2">
-      <div className="w-16 bg-gray-100 rounded-full h-1.5 overflow-hidden">
-        <div className={cn('h-1.5 rounded-full', color)} style={{ width: `${Math.min(value, 100)}%` }} />
-      </div>
-      <span className={cn('text-xs font-medium tabular-nums', value >= good ? 'text-green-700' : value >= warn ? 'text-amber-600' : 'text-red-600')}>
-        {value}%
-      </span>
-    </div>
-  )
-}
 
 // ── Page ───────────────────────────────────────────────────────
+
+interface ClassListItem {
+  id: string
+  class_name: string
+  class_code: string
+  status: string
+  capacity: number
+  schedule: string
+  course?: { level: string }
+  teacher?: { name: string } | null
+  enrolments?: { id: string }[]
+}
 
 export default function ManagerClassesPage() {
   const router = useRouter()
   const [showCreate, setShowCreate] = useState(false)
   const [loading, setLoading] = useState(true)
-  const [classes, setClasses] = useState<any[]>([])
+  const [classes, setClasses] = useState<ClassListItem[]>([])
   const [search, setSearch] = useState('')
 
   useEffect(() => {
     async function loadData() {
       const res = await getClasses()
       if (res.success) {
-        setClasses(res.data)
+        setClasses(res.data as unknown as ClassListItem[])
       }
       setLoading(false)
     }

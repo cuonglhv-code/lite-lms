@@ -32,6 +32,44 @@ import {
 
 type Tab = 'profile' | 'progress' | 'attendance' | 'finance'
 
+interface Class {
+  class_name: string
+  class_code: string
+  course: { name: string }
+  teacher: { name: string }
+}
+
+interface Enrolment {
+  id: string
+  class: Class
+}
+
+interface Assessment {
+  id: string
+  assessment_date: string | Date
+  assessment_type: string | null
+  score: number | string
+}
+
+interface AttendanceRecord {
+  id: string
+  session_date: string | Date
+  status: string
+  class: { class_name: string }
+}
+
+interface StudentData {
+  id: string
+  student_code: string
+  name: string
+  email: string | null
+  phone: string | null
+  created_at: string | Date
+  enrolments: Enrolment[]
+  assessments: Assessment[]
+  attendance: AttendanceRecord[]
+}
+
 export default function StudentDetailsPage() {
   const router = useRouter()
   const params = useParams()
@@ -39,15 +77,15 @@ export default function StudentDetailsPage() {
   
   const [activeTab, setActiveTab] = useState<Tab>('profile')
   const [loading, setLoading] = useState(true)
-  const [student, setStudent] = useState<any>(null)
+  const [student, setStudent] = useState<StudentData | null>(null)
   const [showEditModal, setShowEditModal] = useState(false)
 
   useEffect(() => {
     async function loadData() {
       setLoading(true)
       const res = await getStudentDetails(id)
-      if (res.success) {
-        setStudent(res.data)
+      if (res.success && res.data) {
+        setStudent(res.data as unknown as StudentData)
       } else {
         console.error(res.error)
       }
@@ -76,15 +114,14 @@ export default function StudentDetailsPage() {
     created_at,
     enrolments,
     assessments,
-    attendance,
-    homework
+    attendance
   } = student
 
   // Progress logic
   const targetBand = 7.5 // default fallback or fetch from enrolment
   const currentBand = assessments?.length ? assessments[0].score : 5.5
   
-  const chartData = assessments?.map((a: any) => ({
+  const chartData = assessments?.map((a: Assessment) => ({
     date: new Date(a.assessment_date).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }),
     score: Number(a.score)
   })).reverse() || []
@@ -167,7 +204,7 @@ export default function StudentDetailsPage() {
                   <h3 className="font-bold text-gray-900">Active Enrolments</h3>
                 </div>
                 <div className="p-8">
-                  {enrolments?.map((en: any) => (
+                  {enrolments?.map((en: Enrolment) => (
                     <div key={en.id} className="flex flex-wrap items-center justify-between gap-6 pb-6 mb-6 border-b last:border-0 last:pb-0 last:mb-0">
                       <div>
                         <h4 className="font-bold text-indigo-600">{en.class.class_name}</h4>
@@ -246,7 +283,7 @@ export default function StudentDetailsPage() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-50">
-                    {assessments?.map((ass: any) => (
+                    {assessments?.map((ass: Assessment) => (
                       <tr key={ass.id}>
                         <td className="px-8 py-4 font-medium text-gray-700">{new Date(ass.assessment_date).toLocaleDateString()}</td>
                         <td className="px-8 py-4 font-bold text-gray-900">{ass.assessment_type || 'Test'}</td>
@@ -283,7 +320,7 @@ export default function StudentDetailsPage() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-50">
-                    {attendance?.map((att: any, idx: number) => (
+                    {attendance?.map((att: AttendanceRecord, idx: number) => (
                       <tr key={att.id}>
                         <td className="px-8 py-4 font-medium text-gray-700">{new Date(att.session_date).toLocaleDateString()}</td>
                         <td className="px-8 py-4 text-gray-500 font-medium">{att.class.class_name}</td>
@@ -299,7 +336,7 @@ export default function StudentDetailsPage() {
                           )}
                         </td>
                         <td className="px-8 py-4 font-bold text-gray-800">
-                           {Math.round(((attendance.length - idx - attendance.slice(idx).filter((x: any) => x.status === 'Absent').length) / (attendance.length - idx)) * 100)}%
+                           {Math.round(((attendance.length - idx - attendance.slice(idx).filter((x: AttendanceRecord) => x.status === 'Absent').length) / (attendance.length - idx)) * 100)}%
                         </td>
                       </tr>
                     ))}
@@ -367,7 +404,7 @@ export default function StudentDetailsPage() {
   )
 }
 
-function ProfileInfo({ icon: Icon, label, value, color = "text-gray-800" }: { icon: any, label: string, value: string, color?: string }) {
+function ProfileInfo({ icon: Icon, label, value, color = "text-gray-800" }: { icon: React.ElementType, label: string, value: string | null, color?: string }) {
   return (
     <div className="flex items-start gap-4">
       <div className="w-10 h-10 rounded-xl bg-gray-50 flex items-center justify-center mt-1 border border-gray-100">
@@ -381,7 +418,7 @@ function ProfileInfo({ icon: Icon, label, value, color = "text-gray-800" }: { ic
   )
 }
 
-function StatCard({ label, value, icon: Icon, color }: { label: string, value: any, icon: any, color: string }) {
+function StatCard({ label, value, icon: Icon, color }: { label: string, value: string | number, icon: React.ElementType, color: string }) {
   const bgMap: Record<string, string> = {
     indigo: 'bg-indigo-50 text-indigo-600 border-indigo-100',
     amber: 'bg-amber-50 text-amber-600 border-amber-100',
