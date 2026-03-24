@@ -86,6 +86,12 @@ export async function getStudentsByClass(classId: string): Promise<(Student & { 
   return rows as (Student & { enrolment_status: string; target_exam_date: string | null })[]
 }
 
+export async function getStudentsByIds(ids: string[]): Promise<Student[]> {
+  if (ids.length === 0) return []
+  const { rows } = await sql.query('SELECT * FROM students WHERE id = ANY($1)', [ids])
+  return rows as Student[]
+}
+
 export async function createStudent(data: {
   student_code: string; name: string; email: string; phone: string
 }): Promise<Student> {

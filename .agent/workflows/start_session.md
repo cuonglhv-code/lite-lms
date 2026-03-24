@@ -1,3 +1,7 @@
+---
+description: 
+---
+
 # name: Start Session
 # description: Load project context, review progress, and prepare for work.
 
@@ -15,6 +19,12 @@ You are the lead developer. At the start of every session, you must orient yours
 ## Step 3: Plan Next Task
 - Choose the next item from `session_handoff.md`.
 - Use `new_page.md` or `ai_scoring_pipeline.md` workflows as needed for the task.
+
+## Step 4: Load all skills from .agent/skills/. 
+Active project: lite-lms, branch: feature/activities-ielts-integration.
+Route all tasks through lms-codebase-orchestrator unless I specify otherwise.
+Integration Guard runs before every file write and every commit.
+
 
 ---
 

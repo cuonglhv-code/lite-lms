@@ -1,19 +1,30 @@
 import { auth } from '@/lib/auth'
 import { createServerClient } from '@/lib/supabase/server'
+import { getStudentsByIds } from '@/lib/db/queries'
 import { redirect, notFound } from 'next/navigation'
 import Link from 'next/link'
-import { ChevronLeft, RefreshCw, AlertTriangle } from 'lucide-react'
+import { ChevronLeft, RefreshCw, AlertTriangle, UserCircle } from 'lucide-react'
 import { ActivityStatusBadge } from '@/components/activities/ActivityStatusBadge'
 import { ScoringPoller } from './ScoringPoller'
 import type { ExaminerResult } from '@/lib/examiner/types'
 
 export default async function ResultsPage({ 
-  params 
+  params,
+  searchParams
 }: { 
-  params: { courseId: string; id: string } 
+  params: { courseId: string; id: string }
+  searchParams: { studentId?: string }
 }) {
   const session = await auth()
   if (!session?.user) redirect('/login')
+
+  const isTeacher = ['teacher', 'admin', 'manager'].includes(session.user.role || '')
+  const targetStudentId = searchParams.studentId || session.user.id
+
+  // Security Check: Students can only view their own results
+  if (searchParams.studentId && !isTeacher) {
+    return redirect(`/courses/${params.courseId}/activities/${params.id}/results`)
+  }
 
   const supabase = createServerClient()
   
@@ -21,10 +32,17 @@ export default async function ResultsPage({
     .from('activity_submissions')
     .select('*')
     .eq('activity_id', params.id)
-    .eq('student_id', session.user.id)
+    .eq('student_id', targetStudentId)
     .maybeSingle()
 
   if (error || !data) return notFound()
+
+  // Resolve student name for teacher view banner
+  let studentName = ''
+  if (searchParams.studentId && isTeacher) {
+    const students = await getStudentsByIds([searchParams.studentId])
+    studentName = students[0]?.name || 'Student'
+  }
 
   const isScoring = data.status === 'scoring' || data.status === 'pending'
   const isError = data.status === 'error'
@@ -32,6 +50,12 @@ export default async function ResultsPage({
 
   return (
     <div className="page-container py-10 max-w-4xl">
+      {searchParams.studentId && isTeacher && (
+        <div className="mb-6 flex items-center gap-3 p-4 bg-[var(--color-primary)]/10 border border-[var(--color-primary)]/20 rounded-2xl animate-in fade-in slide-in-from-top-2">
+          <UserCircle className="w-5 h-5 text-[var(--color-primary)]" />
+          <p className="text-sm font-bold text-[var(--color-text-primary)]">Reviewing: <span className="text-[var(--color-primary)]">{studentName}</span>&apos;s submission</p>
+        </div>
+      )}
       <header className="mb-8 font-sans">
         <Link 
           href={`/courses/${params.courseId}/activities`} 
