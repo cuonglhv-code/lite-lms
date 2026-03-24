@@ -240,6 +240,7 @@ export interface ClassWithTeacher {
   status: string
   teacher_name: string
   course_name: string
+  course_id: string
 }
 
 export interface AssignmentWithSubmission extends Assignment {

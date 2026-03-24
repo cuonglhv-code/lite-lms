@@ -82,6 +82,22 @@
     --shadow-modal:    0 20px 25px rgba(0,0,0,0.10), 0 10px 10px rgba(0,0,0,0.04);
     --shadow-header:   0 1px 2px rgba(0,0,0,0.05);
     --shadow-focus:    0 0 0 3px rgba(0,86,210,0.20);
+
+    /* ── Activities Design Tokens ────────────────────────── */
+    --color-primary:      #0056D2;
+    --color-primary-hover:#0041A8;
+    --color-success:      #1A9E47;
+    --color-warning:      #F5A623;
+    --color-error:        #E11B22;
+    --color-surface:      #FFFFFF;
+    --color-surface-alt:  #F3F4F6;
+    --color-border:       #E0E0E0;
+    --color-text-primary: #1F1F1F;
+    --color-text-secondary:#5A5A5A;
+    --color-text-muted:   #9E9E9E;
+    --radius-card:        8px;
+    --shadow-card:        0 1px 4px rgba(0,0,0,0.12);
+    --shadow-card-hover:  0 4px 12px rgba(0,0,0,0.15);
   }
 
   /* ── Base element styles ───────────────────────────────── */

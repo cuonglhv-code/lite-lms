@@ -1,10 +1,13 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import Link from 'next/link'
+import { usePathname } from 'next/navigation'
 import { useParams } from 'next/navigation'
 import type { ClassWithTeacher, AssignmentWithSubmission } from '@/lib/types'
 import ClassHeader from '@/components/student/ClassHeader'
 import AssignmentCard from '@/components/student/AssignmentCard'
+import { ClipboardList, PenLine } from 'lucide-react'
 
 type Filter = 'all' | 'not_submitted' | 'submitted' | 'returned'
 
@@ -21,6 +24,8 @@ export default function ClassAssignmentsPage() {
   const [assignments, setAssignments] = useState<AssignmentWithSubmission[]>([])
   const [filter, setFilter] = useState<Filter>('all')
   const [loading, setLoading] = useState(true)
+  const pathname = usePathname()
+  const isActivities = pathname.includes('/activities')
 
   useEffect(() => {
     async function load() {
@@ -60,6 +65,32 @@ export default function ClassAssignmentsPage() {
   return (
     <div className="space-y-6">
       <ClassHeader cls={cls} />
+      
+      {/* Course Sub-navigation */}
+      <div className="flex border-b border-[var(--color-border)] mb-4">
+        <Link
+          href={`/student/class/${classId}`}
+          className={`px-6 py-3 border-b-2 text-sm flex items-center gap-2 transition-all ${
+            !isActivities
+              ? 'border-[var(--color-primary)] text-[var(--color-primary)] font-bold'
+              : 'border-transparent text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:border-[var(--color-border)] font-medium'
+          }`}
+        >
+          <ClipboardList className="w-4 h-4" />
+          Assignments
+        </Link>
+        <Link
+          href={`/courses/${cls.course_id}/activities`}
+          className={`px-6 py-3 border-b-2 text-sm flex items-center gap-2 transition-all ${
+            isActivities
+              ? 'border-[var(--color-primary)] text-[var(--color-primary)] font-bold'
+              : 'border-transparent text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:border-[var(--color-border)] font-medium'
+          }`}
+        >
+          <PenLine className="w-4 h-4" />
+          IELTS Writing Tasks
+        </Link>
+      </div>
 
       {/* Filter tabs */}
       <div className="flex gap-2 flex-wrap">

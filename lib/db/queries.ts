@@ -242,7 +242,7 @@ export async function getStudentByUserId(userId: string): Promise<Student | null
 export async function getEnrolledClassesForStudent(studentId: string): Promise<ClassWithTeacher[]> {
   const { rows } = await sql`
     SELECT c.id, c.class_name, c.class_code, c.schedule, c.status,
-           u.name AS teacher_name, co.name AS course_name
+           u.name AS teacher_name, co.name AS course_name, c.course_id
     FROM enrolments e
     JOIN classes c ON e.class_id = c.id
     LEFT JOIN users u ON c.teacher_id = u.id
