@@ -54,7 +54,6 @@ export const MANAGER_NAV_GROUPS: NavGroup[] = [
     items: [
       { label: 'Courses',     href: '/manager/courses',      icon: BookOpen },
       { label: 'Classes',     href: '/manager/classes',      icon: GraduationCap },
-      // TODO [M6]: build /manager/activities page
       { label: 'Activities',  href: '/manager/activities',   icon: PenLine },
       { label: 'Assessments', href: '/manager/assessments',  icon: ClipboardList },
       { label: 'Teachers',    href: '/manager/teachers',     icon: UserCheck },
@@ -96,7 +95,6 @@ export const TEACHER_NAV_GROUPS: NavGroup[] = [
     items: [
       { label: 'My Classes',     href: '/teacher/classes',       icon: GraduationCap },
       { label: 'Attendance',     href: '/teacher/attendance',    icon: ClipboardCheck },
-      // TODO [M6]: build /teacher/activities page
       { label: 'IELTS Tasks',    href: '/teacher/activities',    icon: PenLine },
       { label: 'Homework',       href: '/teacher/homework',      icon: BookMarked,  badgeKey: 'ungradedHomework' },
       { label: 'Assessments',    href: '/teacher/assessments',   icon: BarChart2 },
