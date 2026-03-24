@@ -21,10 +21,10 @@ type ActivityWithSubmissions = {
 
 export default async function ManagerActivitiesPage() {
   const session = await auth()
-  const isAdmin = ['admin', 'manager', 'academic_manager'].includes(session?.user?.role || '')
+  const isAllowed = ['admin', 'manager'].includes(session?.user?.role || '')
   
-  if (!session?.user || !isAdmin) {
-    redirect('/unauthorized')
+  if (!session?.user || !isAllowed) {
+    redirect('/dashboard')
   }
 
   const supabase = createServerClient()

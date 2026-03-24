@@ -7,7 +7,11 @@ import { getClassesByTeacher } from '@/lib/db/queries'
 
 export default async function TeacherActivitiesPage() {
   const session = await auth()
-  if (!session?.user) redirect('/login')
+  const isTeacher = ['teacher', 'admin', 'manager'].includes(session?.user?.role || '')
+  
+  if (!session?.user || !isTeacher) {
+    redirect('/dashboard') // Fallback since /unauthorized does not exist
+  }
 
   const supabase = createServerClient()
   

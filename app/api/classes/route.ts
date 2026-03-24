@@ -4,9 +4,13 @@ import { getAllClasses, getClassesByTeacher, createClass } from '@/lib/db/querie
 
 export async function GET() {
   const session = await auth()
-  if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  if (!session?.user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-  const classes = session.user.role === 'manager'
+  const role = session.user.role
+  const isStaff = ['teacher', 'admin', 'manager'].includes(role || '')
+  if (!isStaff && role !== 'student') return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+
+  const classes = (role === 'manager' || role === 'admin')
     ? await getAllClasses()
     : await getClassesByTeacher(session.user.id)
 

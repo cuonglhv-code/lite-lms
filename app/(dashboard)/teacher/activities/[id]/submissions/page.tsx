@@ -8,7 +8,11 @@ import { ChevronLeft, Users, BarChart2, CheckCircle2, AlertCircle } from 'lucide
 
 export default async function ActivitySubmissionsPage({ params }: { params: { id: string } }) {
   const session = await auth()
-  if (!session?.user) redirect('/login')
+  const isTeacher = ['teacher', 'admin', 'manager'].includes(session?.user?.role || '')
+  
+  if (!session?.user || !isTeacher) {
+    redirect('/dashboard')
+  }
 
   const supabase = createServerClient()
   
