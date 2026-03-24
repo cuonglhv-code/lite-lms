@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/lib/auth'
 import { createServerClient } from '@/lib/supabase/server'
+import { callExaminer } from '@/lib/examiner/client'
+import type { ExaminerPayload } from '@/lib/examiner/types'
+import type { Json } from '@/lib/supabase/types'
 import type { Database } from '@/lib/supabase/types'
 
 type SubmissionInsert = Database['public']['Tables']['activity_submissions']['Insert']
@@ -20,7 +23,7 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
 
     const { data: activity, error: activityError } = await supabase
       .from('activities')
-      .select('type')
+      .select('type, config_json')
       .eq('id', params.id)
       .maybeSingle()
 
@@ -63,9 +66,41 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
       return NextResponse.json({ error: 'Server error' }, { status: 500 })
     }
 
-    // TODO [M5]: Call jaxtina-ielts-examiner API here after insertion
-    // POST ${process.env.IELTS_EXAMINER_API_URL}/api/[task1|analyze]
-    // On result: update status='scored', write examiner_result_json, band_overall, scored_at
+    // Trigger examiner scoring asynchronously (we don't await the final redirect)
+    // The client will poll the results page for the 'scored' status.
+    try {
+      const config = activity.config_json as unknown as { prompt?: string; taskType?: 'academic' | 'general' }
+      const payload: ExaminerPayload = {
+        essay: essay_text,
+        taskNumber: activity.type === 'ielts_task1' ? '1' : '2',
+        taskType: config.taskType ?? 'academic',
+        question: config.prompt ?? '',
+        user_id: session.user.id,
+        language: 'en'
+      }
+
+      const examinerResult = await callExaminer(payload)
+
+      // Write results back to activity_submissions
+      await supabase
+        .from('activity_submissions')
+        .update({
+          status: 'scored',
+          examiner_result_json: examinerResult.result as unknown as Json,
+          examiner_payload_json: payload as unknown as Json,
+          band_overall: examinerResult.result.bands.overall,
+          scored_at: new Date().toISOString()
+        })
+        .eq('id', submission.id)
+
+    } catch (err: unknown) {
+      console.error('[M5_EXAMINER_CALL_FAILED]', err)
+      // Soft-fail to error state so the Results page can show the failure message
+      await supabase
+        .from('activity_submissions')
+        .update({ status: 'error' })
+        .eq('id', submission.id)
+    }
 
     return NextResponse.json({ submission_id: submission.id })
   } catch {
