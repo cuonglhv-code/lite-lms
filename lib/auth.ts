@@ -13,44 +13,24 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         password: { label: 'Password', type: 'password' },
       },
       async authorize(credentials) {
+        // ... same as before ...
         if (!credentials?.email || !credentials?.password) return null
-
         const user = await prisma.user.findUnique({
           where: { email: credentials.email as string },
-          include: {
-            centerManagers: {
-              select: { centerId: true, role: true },
-              take: 1
-            }
-          }
+          include: { centerManagers: { select: { centerId: true, role: true }, take: 1 } }
         })
-
         if (!user) return null
-
         const valid = await bcrypt.compare(credentials.password as string, user.password_hash)
         if (!valid) return null
-
-        // Determine centerId based on role
         let centerId: string | null = user.centerId
         let role: string = user.role
-
         if (user.role === 'center_manager') {
           const cm = user.centerManagers[0]
-          if (cm) {
-            centerId = cm.centerId
-            role = cm.role // Use the specific role from CenterManager if needed
-          }
+          if (cm) { centerId = cm.centerId; role = cm.role }
         } else if (user.role === 'admin' || user.role === 'academic_manager') {
-          centerId = null // All access
+          centerId = null
         }
-
-        return { 
-          id: user.id, 
-          name: user.name, 
-          email: user.email, 
-          role, 
-          centerId 
-        }
+        return { id: user.id, name: user.name, email: user.email, role, centerId }
       },
     }),
   ],
@@ -71,8 +51,6 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       return session
     },
   },
-  pages: {
-    signIn: '/login',
-  },
+  pages: { signIn: '/login' },
   session: { strategy: 'jwt' },
 })
